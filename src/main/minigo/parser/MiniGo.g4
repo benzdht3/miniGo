@@ -24,6 +24,211 @@ options{
 	language=Python3;
 }
 
+// PARSER
+
+program: NL* declarations NL* EOF ;
+
+// DECLARATION
+
+declarations:
+    constDeclare
+|   varDeclare
+|   typeDeclare
+|   funcDeclare
+;
+
+constDeclare: CONST ID ASSIGN value SEMICOLON ;
+
+value:
+    literals
+|   expr
+;
+
+varDeclare: VAR ID (varType|arrayType)? init? SEMICOLON ;
+
+varType:
+    INT
+|   FLOAT
+|   STRING
+|   BOOLEAN
+;
+
+arrayType: dimensions+ (varType|STRUCT) ;
+
+dimensions: LP (INTLIT|ID) RP;
+
+init: ASSIGN expr ;
+
+typeDeclare: TYPE ID (structDeclare|interfaceDeclare) ;
+
+structDeclare: STRUCT LC (field)* RC (NL|SEMICOLON) ;
+
+field: NL* ID (varType
+            |  structDeclare
+            |  arrayType
+            |  interfaceDeclare) (SEMICOLON|NL) ;
+
+interfaceDeclare: INTERFACE LC method* RC (SEMICOLON|NL);
+
+method: ID LB parameters? RB (varType|arrayType) ;
+
+parameters: ID (varType|arrayType)? paraTail ;
+
+paraTail: COMMA parameters paraTail | ;
+
+funcDeclare: FUNC methodDeclare? method LC stmt+ RC NL ;
+
+methodDeclare: LB ID ID RB ;
+
+// STATEMENTS
+
+stmt:
+    (varDeclare
+|    constDeclare
+|    assignment
+|    ifstmt
+|    forstmt
+|    breakstmt
+|    contstmt
+|    funcCall
+|    methodCall
+|    returnstmt) (SEMICOLON|NL) ;
+
+assignment: lhs assignOp expr ;
+
+lhs:
+    ID
+|   arrayElement
+|   structField
+
+assignOp:
+    COLON EQUAL
+|   ADDASS
+|   SUBASS
+|   MULASS
+|   DIVASS
+|   MODASS
+;
+
+ifstmt: IF LB expr RB LC NL* stmt* RC elsestmt?
+
+elsestmt:
+    ifstmt
+|   LC NL* stmt* RC
+;
+
+forstmt:
+    (expr
+|    three
+|    range) LC NL* stmt* RC ;
+;
+
+three:
+    (assignment
+|    VAR ID (varType|arrayType)? init) SEMICOLON expr SEMICOLON assignment ;
+
+range: ('index'|'_') COMMA ('value'|'_') DOT EQUAL RANGE (ID|arrayLit) ;
+
+breakstmt: BREAK SEMICOLON ;
+
+contstmt: CONTINUE SEMICOLON ;
+
+returnstmt: RETURN expr? SEMICOLON ;
+
+// EXPRESSION
+
+expr:
+    expr OR expr1
+|   expr1
+;
+
+expr1:
+    expr1 AND expr2
+|   expr2
+;
+
+expr2:
+    expr2 (EQ|UNEQ|LESS|LESSEQ|MORE|MOREEQ) expr3
+|   expr3
+;
+
+expr3:
+    expr3 (ADD|SUBTR) expr4
+|   expr4
+;
+
+expr4:
+    expr4 (MUL|DIV|MOD) expr5
+|   expr5
+;
+
+expr5:
+    <assoc=right> (NOTOP|SUBTR) expr6
+|   expr6
+;
+
+expr6:
+    arrayElement
+|   structField
+|   expr7
+;
+
+arrayElement: ID index+ ;
+
+index: LP expr RP ;
+
+structField: ID DOT ID ;
+
+expr7:
+    funcCall
+|   methodCall
+|   expr8
+;
+
+funcCall: ID LB arguments? RB ;
+
+arguments: expr argTail ;
+
+argTail: COMMA expr argTail | ;
+
+methodCall: ID DOT funcCall ;
+
+expr8:
+    LB expr RB
+|   operands
+;
+
+operands:
+    ID
+|   literals
+;
+
+literal:
+    INTLIT
+|   FLOATLIT
+|   BOOLLIT
+|   STRINGLIT
+|   arrayLit
+|   structLit
+;
+
+arrayLit: arrayType literals? ;
+
+literals:
+    LC literal literalTail RC
+|   literal literalTail
+;
+
+literalTail: COMMA (literal literalTail | LC literal literalTail RC) | ;
+
+structLit: ID LC structElements? RC ;
+
+structElement: ID COLON expr elementTail;
+
+elementTail: COMMA structElement | ;
+
+// LEXICAL
+
 // Seperators
 
 LB: '(' ;
@@ -34,7 +239,7 @@ LP: '[' ;
 RP: ']' ;
 COMMA: ',' ;
 SEMICOLON: ';' ;
-
+COLON: ':' ;
 
 // Operators
 
@@ -58,7 +263,7 @@ SUBASS: '-=' ;
 MULASS: '*=' ;
 DIVASS: '/=' ;
 MODASS: '%=' ;
-CONCAT: '.' ;
+DOT: '.' ;
 
 // Keywords
 
@@ -95,7 +300,7 @@ NL:
 
 // Literals
 
-INTEGER:
+INTLIT:
     DECIMAL
 |   BINARY
 |   OCTAL
@@ -113,17 +318,17 @@ OCTAL: 0 (o|O) [0-7]+ ;
 
 HEXADECIMAL: 0 (x|X) [0-9a-fA-F]+ ;
 
-FLOAT:
+FLOATLIT:
     [0-9] '.' [0-9]*
 |   [0-9] '.' [0-9] (e|E) (+|-)? [0-9]+
 ;
 
-BOOLEAN: TRUE | FALSE ;
+BOOLLIT: TRUE | FALSE ;
 
 TRUE: 'true' ;
 FALSE: 'false' ;
 
-STRING: '"' (~[\r\n"] | [\b\f\t'\\] | ('\'' '"'))* '"' {
+STRINGLIT: '"' (~[\r\n"] | [\b\f\t'\\] | ('\'' '"'))* '"' {
 			txt = self.text[1:-1]
 			pos = 0
 			l = len(txt)
