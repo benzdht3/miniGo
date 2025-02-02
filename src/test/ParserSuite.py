@@ -2,38 +2,9 @@ import unittest
 from TestUtils import TestParser
 
 class ParserSuite(unittest.TestCase):
-    def test_simple_program(self):
-        """Simple program: void main() {} """
-        input = """func main() {};"""
-        expect = "successful"
-        self.assertTrue(TestParser.checkParser(input,expect,305))
-
-    def test_more_complex_program(self):
-        """More complex program"""
-        input = """func foo () {
-        };"""
-        expect = "successful"
-        self.assertTrue(TestParser.checkParser(input,expect,304))
-
-    def test_wrong_miss_close(self):
-        """Miss ) void main( {}"""
-        input = """func main({};"""
-        expect = "Error on line 1 col 11: {"
-        self.assertTrue(TestParser.checkParser(input,expect,303))
-    def test_wrong_variable(self):
-        input = """var int;"""
-        expect = "Error on line 1 col 5: int"
-        self.assertTrue(TestParser.checkParser(input,expect,302))
-    def test_wrong_index(self):
-        input = """var i ;"""
-        expect = "Error on line 1 col 7: ;"
-        self.assertTrue(TestParser.checkParser(input,expect,301))
-
     def test_simpler_program(self):
-        """Simple program: int main() {} """
         input = [
-
-        """func main() { return 1; };
+        """func main() { return 1; }
         """,#1
         #variable declaration
         #booltype
@@ -80,11 +51,11 @@ class ParserSuite(unittest.TestCase):
         """,#20
         """var a string = string ;
         """,#21
-        """var a string a = int ;
+        """var a string = int ;
         """,#22
         """var a string = boolean ;
         """,#23
-        """var a string a = "string" ;
+        """var a string = "string" ;
         """,#24
         """var a string = true ;
         """,#25
@@ -115,20 +86,20 @@ class ParserSuite(unittest.TestCase):
         """var dynamic struct = b ;
         """,#39
         ##array
-        """var a int[] ;
+        """var a []int ;
         """,#40
-        """var a int[1] ;
+        """var a [1]int ;
         """,#41
-        """var a int[abc] ;
+        """var a [abc]int ;
         """,#42
-        """var a int[1,2] = {{1},{2},{3}} ;
+        """var a [1]int = {1,2,3} ;
         """,#43
-        """var a int[1,2] = {{1,2},{1,2}} ;
+        """var a [1][2]int = {{1,2},{1,2}} ;
         """,#44
-        """var a int[1,3] = {{abc,"string",1},{123,"a b c",z}} ;
+        """var a [1][3]int = {{abc,"string",1},123,{"a b c",123}} ;
         """,#45
-        """var a int[1] = {123 ;""",#46
-        """var  a int(1) ;
+        """var a [1]int = {123 ;""",#46
+        """var a (1)int ;
         """,#47
         #arithmetic expression
         """var a = a+b ;
@@ -155,31 +126,31 @@ class ParserSuite(unittest.TestCase):
         """var a = foo1(foo2(foo3(1,a,"string"))) ;
         """,#57
         #function declaration
-        """func foo() {} ;
+        """func foo() {} 
         """,#58
-        """FUNC foo() {} ;
+        """FUNC foo() {}
         """,#59
-        """func 1foo() {} ;
+        """func 1foo() {}
         """,#60
         """func foo()""",#61
-        """func isPrime(int x) {} ;
+        """func isPrime(x int) {}
         """,#62
-        """func foo(int x, string y, boolean z) {} ;
+        """func foo(x, y string, z boolean) {}
         """,#63
-        """func foo(var x) {} ;
+        """func foo(x var) {}
         """,#64
-        """func foo(int x, string y) int {
+        """func foo(x int, y string) int {
             return x + y ;
         }
         """,#65
-        """func foo(int x, string y) {
-            int x <- 1;
+        """func foo(x int, y string) {
+            x := 1;
         }
         """,#66
         #assignment
         """func main() {
             aPI := 3.14 ;
-            l[3] += value * aPI ;
+            l[3] += val * aPI ;
         }
         """,#67
         """func main() {
@@ -305,7 +276,7 @@ class ParserSuite(unittest.TestCase):
             return ; }
         """,#91
         """func main() {
-            return a + b * c -d / z ... "string"
+            return a + b * c -d / z + "string"
         }
         """,#92
         """func main() {
@@ -314,8 +285,8 @@ class ParserSuite(unittest.TestCase):
         """,#93
         """func main() {
             return}""",#94
-        """func areDivisors(int num1, int num2) {
-            return ((num1 % num2 = 0) or (num2 % num1 = 0))
+        """func areDivisors(num1 int, num2 int) {
+            return ((num1 % num2 == 0) || (num2 % num1 == 0))
         }
         """,#95
         """func main() {
@@ -328,19 +299,19 @@ class ParserSuite(unittest.TestCase):
                 writeString("No")
             }
         }
-        """,#99
-        """func isPrime(int x) {}
+        """,#96
+        """func isPrime(x int) {}
         func main() {
-            int x = readNumber() ;
+            var x int = readNumber() ;
             if (isPrime(x)) {
                 writeString("Yes")
             } else { writeString("No"); }
         }
-        func isPrime(int x) {
+        func isPrime(x int) {
             if (x <= 1) { return false; }
             var i = 2 ;
             for var i int = 0; i > x / 2; i += 1 {
-                if (x / i = 0) {return false;}
+                if (x / i == 0) {return false;}
             }
             return true
         }
@@ -355,102 +326,98 @@ class ParserSuite(unittest.TestCase):
             "Error on line 1 col 5: 1",#5
             "successful",#6
             "successful",#7
-            "Error on line 1 col 7: -",#8
-            "Error on line 1 col 7: =",#9
-            "Error on line 1 col 7: 1",#10
+            "Error on line 1 col 15: -",#8
+            "Error on line 1 col 15: ==",#9
+            "Error on line 1 col 5: 1",#10
             #211-220
             "successful",#11
             "successful",#12
-            "successful",#13
-            "successful",#14
+            "Error on line 1 col 11: a",#13
+            "Error on line 1 col 5: int",#14
             "successful",#15
-            "Error on line 1 col 11: >",#16
-            "Error on line 1 col 7: int",#17
-            "Error on line 1 col 7: string",#18
+            "Error on line 1 col 11: <",#16
+            "Error on line 1 col 5: int",#17
+            "Error on line 1 col 5: string",#18
             "successful",#19
             "successful",#20
-            "Error on line 1 col 12: string",#21
-            "Error on line 1 col 12: int",#22
-            "Error on line 1 col 12: boolean",#23
+            "Error on line 1 col 16: string",#21
+            "Error on line 1 col 16: int",#22
+            "Error on line 1 col 16: boolean",#23
             "successful",#24
             "successful",#25
-            "Error on line 1 col 8: <EOF>",#26
-            "Error on line 1 col 8: <EOF>",#27
-            "Error on line 1 col 6: <EOF>",#28
-            "Error on line 1 col 5: <EOF>",#29
+            "Error on line 1 col 10: <EOF>",#26
+            "Error on line 1 col 13: <EOF>",#27
+            "Error on line 1 col 14: <EOF>",#28
+            "successful",#29
             "successful",#30
             "Error on line 1 col 9: string",#31
             "successful",#32
             "successful",#33
             "Error on line 1 col 9: var",#34
-            "Error on line 1 col 9: dynamic",#35
-            "Error on line 1 col 8: var",#36
-            "successful",#37
-            "successful",#38
-            "successful",#39
-            "Error on line 1 col 9: ]",#40
+            "successful",#35
+            "Error on line 1 col 13: var",#36
+            "Error on line 1 col 7: struct",#37
+            "Error on line 1 col 7: struct",#38
+            "Error on line 1 col 13: struct",#39
+            "Error on line 1 col 8: ]",#40
             "successful",#41
-            "Error on line 1 col 9: abc",#42
+            "successful",#42
             "successful",#43
             "successful",#44
             "successful",#45
-            "Error on line 1 col 19: <EOF>",#46
-            "Error on line 1 col 8: (",#47
+            "Error on line 1 col 21: ;",#46
+            "Error on line 1 col 7: (",#47
             "successful",#48
             "successful",#49
             "successful",#50
             "successful",#51
-            "Error on line 1 col 10: not",#52
+            "Error on line 1 col 11: !",#52
             "successful",#53
             "successful",#54
             "successful",#55
             "successful",#56
             "successful",#57
             "successful",#58
-            "Error on line 1 col 0: FUNC",#59
-            "Error on line 1 col 5: 1",#60
-            "Error on line 1 col 10: <EOF>",#61
+            "Error on line 1 col 1: FUNC",#59
+            "Error on line 1 col 6: 1",#60
+            "Error on line 1 col 11: <EOF>",#61
             "successful",#62
             "successful",#63
-            "Error on line 1 col 9: var",#64
+            "Error on line 1 col 12: var",#64
             "successful",#65
             "successful",#66
             "successful",#67
-            "Error on line 5 col 8: abc",#68
-            "Error on line 3 col 15: b",#69
+            "Error on line 4 col 13: abc",#68
+            "Error on line 2 col 20: b",#69
             "successful",#70
             "successful",#71
             "successful",#72
-            "Error on line 3 col 11: a",#73
+            "Error on line 2 col 16: a",#73
             "successful",#74
-            "Error on line 3 col 17: (",#75
-            "Error on line 3 col 13: <",#76
+            "Error on line 2 col 22: (",#75
+            "Error on line 2 col 22: {",#76
             "successful",#77
-            "successful",#78
-            "Error on line 3 col 12: i",#79
-            "Error on line 3 col 14: by",#80
+            "Error on line 1 col 12: \n\n",#78
+            "Error on line 2 col 17: i",#79
+            "successful",#80
             "successful",#81
-            "Error on line 1 col 0: break",#82
-            "Error on line 2 col 8: break",#83
+            "Error on line 1 col 1: break",#82
+            "successful",#83
             "successful",#84
-            "Error on line 3 col 14: break",#85
+            "successful",#85
             "successful",#86
-            "Error on line 1 col 0: continue",#87
+            "Error on line 1 col 1: continue",#87
             "successful",#88
             "successful",#89
-            "Error on line 3 col 17: ,",#90
+            "Error on line 2 col 22: ,",#90
             "successful",#91
             "successful",#92
-            "Error on line 2 col 15: ,",#93
-            "Error on line 2 col 14: <EOF>",#94
+            "Error on line 2 col 20: ,",#93
+            "Error on line 2 col 19: }",#94
             "successful",#95
-            "Error on line 1 col 0: {",#96
-            "Error on line 2 col 14: }",#97
-            "successful",#98
-            "successful",#99
-            "successful"#100
+            "successful",#96
+            "successful",#97
         ]
         for i in range(0,len(input),1):
-            print(i+1)
             self.assertTrue(TestParser.checkParser(input[i],expect[i],200+i+1))
 

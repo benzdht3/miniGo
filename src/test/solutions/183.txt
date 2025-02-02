@@ -1,0 +1,1 @@
+multiple strings,first string,second string,<EOF>

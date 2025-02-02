@@ -1,0 +1,4 @@
+func main() {
+            return a + b * c -d / z + "string"
+        }
+        

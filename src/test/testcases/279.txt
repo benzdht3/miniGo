@@ -1,0 +1,6 @@
+func main() {
+            fOr i := 0, i > x / 2, i -= 1 {
+                donothing()
+            }
+        }
+        

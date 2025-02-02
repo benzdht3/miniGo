@@ -1,0 +1,1 @@
+number in string type 123.e123,<EOF>

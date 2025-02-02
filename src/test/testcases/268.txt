@@ -1,0 +1,6 @@
+func main() {
+            a /= 1 ;
+            str *= "Nguyen Van A" ;
+            "abc" %= 1 ;
+        }
+        

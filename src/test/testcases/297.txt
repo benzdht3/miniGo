@@ -1,0 +1,16 @@
+func isPrime(x int) {}
+        func main() {
+            var x int = readNumber() ;
+            if (isPrime(x)) {
+                writeString("Yes")
+            } else { writeString("No"); }
+        }
+        func isPrime(x int) {
+            if (x <= 1) { return false; }
+            var i = 2 ;
+            for var i int = 0; i > x / 2; i += 1 {
+                if (x / i == 0) {return false;}
+            }
+            return true
+        }
+        

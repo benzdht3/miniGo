@@ -30,21 +30,20 @@ program: NL* declarations NL* EOF ;
 
 // DECLARATION
 
-declarations:
+declarations: declare declareTail ;
+
+declare:
     constDeclare
 |   varDeclare
 |   typeDeclare
 |   funcDeclare
 ;
 
-constDeclare: CONST ID ASSIGN value SEMICOLON ;
+declareTail: NL* declare declareTail | ;
 
-value:
-    literals
-|   expr
-;
+constDeclare: CONST ID ASSIGN expr SEMICOLON ;
 
-varDeclare: VAR ID (varType|arrayType)? init? SEMICOLON ;
+varDeclare: VAR ID (arrayType|varType)? init? SEMICOLON ;
 
 varType:
     INT
@@ -70,13 +69,13 @@ field: NL* ID (varType
 
 interfaceDeclare: INTERFACE LC method* RC (SEMICOLON|NL);
 
-method: ID LB parameters? RB (varType|arrayType) ;
+method: ID LB parameters? RB (varType|arrayType)? ;
 
 parameters: ID (varType|arrayType)? paraTail ;
 
 paraTail: COMMA parameters paraTail | ;
 
-funcDeclare: FUNC methodDeclare? method LC stmt+ RC NL ;
+funcDeclare: FUNC methodDeclare? method LC NL* (stmt NL*)* RC NL ;
 
 methodDeclare: LB ID ID RB ;
 
@@ -92,17 +91,18 @@ stmt:
 |    contstmt
 |    funcCall
 |    methodCall
-|    returnstmt) (SEMICOLON|NL) ;
+|    returnstmt) (SEMICOLON NL|SEMICOLON|NL) ;
 
-assignment: lhs assignOp expr ;
+assignment: lhs assignOp (expr|arrayInit) ;
 
 lhs:
     ID
 |   arrayElement
 |   structField
+;
 
 assignOp:
-    COLON EQUAL
+    COLON ASSIGN
 |   ADDASS
 |   SUBASS
 |   MULASS
@@ -110,30 +110,27 @@ assignOp:
 |   MODASS
 ;
 
-ifstmt: IF LB expr RB LC NL* stmt* RC elsestmt?
+ifstmt: IF LB expr RB LC NL* stmt* RC elsestmt? ;
 
 elsestmt:
-    ifstmt
-|   LC NL* stmt* RC
-;
+    ELSE (ifstmt | LC NL* stmt* RC) ;
 
 forstmt:
-    (expr
-|    three
-|    range) LC NL* stmt* RC ;
-;
+    FOR (expr
+    |    initFor
+    |    rangeFor) LC NL* stmt* RC ;
 
-three:
+initFor:
     (assignment
 |    VAR ID (varType|arrayType)? init) SEMICOLON expr SEMICOLON assignment ;
 
-range: ('index'|'_') COMMA ('value'|'_') DOT EQUAL RANGE (ID|arrayLit) ;
+rangeFor: ('index'|'_') COMMA ('value'|'_') COLON ASSIGN RANGE (ID|arrayLit) ;
 
-breakstmt: BREAK SEMICOLON ;
+breakstmt: BREAK ;
 
-contstmt: CONTINUE SEMICOLON ;
+contstmt: CONTINUE ;
 
-returnstmt: RETURN expr? SEMICOLON ;
+returnstmt: RETURN expr? ;
 
 // EXPRESSION
 
@@ -148,7 +145,7 @@ expr1:
 ;
 
 expr2:
-    expr2 (EQ|UNEQ|LESS|LESSEQ|MORE|MOREEQ) expr3
+    expr2 (EQ|UNEQ|LESS|LESSEQ|GREATER|GREATEREQ) expr3
 |   expr3
 ;
 
@@ -163,7 +160,7 @@ expr4:
 ;
 
 expr5:
-    <assoc=right> (NOTOP|SUBTR) expr6
+    <assoc=right> (NOT|SUBTR) expr6
 |   expr6
 ;
 
@@ -177,7 +174,7 @@ arrayElement: ID index+ ;
 
 index: LP expr RP ;
 
-structField: ID DOT ID ;
+structField: ID '.' ID ;
 
 expr7:
     funcCall
@@ -191,17 +188,14 @@ arguments: expr argTail ;
 
 argTail: COMMA expr argTail | ;
 
-methodCall: ID DOT funcCall ;
+methodCall: ID '.' funcCall ;
 
 expr8:
     LB expr RB
-|   operands
+|   literal
 ;
 
-operands:
-    ID
-|   literals
-;
+arrayInit: arrayType arrayLit? ;
 
 literal:
     INTLIT
@@ -210,18 +204,14 @@ literal:
 |   STRINGLIT
 |   arrayLit
 |   structLit
+|   ID
 ;
 
-arrayLit: arrayType literals? ;
+arrayLit: LC literal literalTail RC literalTail ;
 
-literals:
-    LC literal literalTail RC
-|   literal literalTail
-;
+literalTail: COMMA literal literalTail | ;
 
-literalTail: COMMA (literal literalTail | LC literal literalTail RC) | ;
-
-structLit: ID LC structElements? RC ;
+structLit: ID LC structElement? RC ;
 
 structElement: ID COLON expr elementTail;
 
@@ -252,8 +242,8 @@ EQ: '==' ;
 UNEQ: '!=' ;
 LESS: '<' ;
 LESSEQ: '<=' ;
-MORE: '>' ;
-MOREEQ: '>=' ;
+GREATER: '>' ;
+GREATEREQ: '>=' ;
 AND: '&&' ;
 OR: '||' ;
 NOT: '!' ;
@@ -263,7 +253,6 @@ SUBASS: '-=' ;
 MULASS: '*=' ;
 DIVASS: '/=' ;
 MODASS: '%=' ;
-DOT: '.' ;
 
 // Keywords
 
@@ -307,54 +296,39 @@ INTLIT:
 |   HEXADECIMAL
 ;
 
+FLOATLIT:
+    ([0-9]|[1-9] [0-9]*) '.' [0-9]*
+|   ([0-9]|[1-9] [0-9]*) '.' [0-9] ('e'|'E') ('+'|'-')? [0-9]+
+;
+
 DECIMAL:
     [0-9]
 |   [1-9] [0-9]+
 ;
 
-BINARY: 0 (b|B) (1|0)+ ;
+BINARY: '0' ('b'|'B') ('1'|'0')+ ;
 
-OCTAL: 0 (o|O) [0-7]+ ;
+OCTAL: '0' ('o'|'O') [0-7]+ ;
 
-HEXADECIMAL: 0 (x|X) [0-9a-fA-F]+ ;
-
-FLOATLIT:
-    [0-9] '.' [0-9]*
-|   [0-9] '.' [0-9] (e|E) (+|-)? [0-9]+
-;
+HEXADECIMAL: '0' ('x'|'X') [0-9a-fA-F]+ ;
 
 BOOLLIT: TRUE | FALSE ;
 
 TRUE: 'true' ;
 FALSE: 'false' ;
 
-STRINGLIT: '"' (~[\r\n"] | [\b\f\t'\\] | ('\'' '"'))* '"' {
-			txt = self.text[1:-1]
-			pos = 0
-			l = len(txt)
-			while pos < l:
-				while pos < l and txt[pos] != '\\':
-					pos += 1
-				pos += 1
-				if pos < l:
-					escap = txt[pos]
-					if escap != 't' and escap != 'r' and escap != '\"' and escap != 'n' and escap != '\\':
-						raise IllegalEscape(txt[:pos+1])
-					else:
-						pos += 1
-				else:
-					self.text=txt
-			self.text=txt
-		};
+STRINGLIT: '"' ('\\' [ntr"\\] | ~["\\])* '"' {
+    self.text = self.text[1:-1]
+};
 
 // Comment
 
-COMMENT: (('//' (~[\n])*) | ('/*' .* '*/')) -> skip ;
+COMMENT: (('//' (~[\n])*) | ('/*' .*? '*/')) -> skip ;
 
 // White spaces
 
 WS : [ \t\b\f]+ -> skip ; // skip spaces, tabs
 
 ERROR_CHAR: . {raise ErrorToken(self.text)} ;
-ILLEGAL_ESCAPE: . {raise IllegalEscape(self.text)} ;
+ILLEGAL_ESCAPE: '"' ('\\' [ntr"\\] | ~["\\])* ('\\' ~[tnr"\\] | '\\') { raise IllegalEscape(self.text[1:]) };
 UNCLOSE_STRING: '"' ([#-~ !]| [\b\f\t] | ('\'' '"'))* {raise UncloseString(self.text[1:])} ;

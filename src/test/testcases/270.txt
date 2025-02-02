@@ -1,0 +1,4 @@
+func main() {
+            if (areDivisor(num1,num2)) { writeString("yes"); }
+        }
+        

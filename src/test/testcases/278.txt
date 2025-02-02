@@ -1,0 +1,6 @@
+func main()
+            for i > x / 2 {
+                if (x/i=0) {return false;}
+            }
+        }
+        

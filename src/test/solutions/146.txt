@@ -1,0 +1,1 @@
+String with a lot special characters: !#$%^&**%^#$%!,<EOF>
