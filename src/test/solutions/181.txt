@@ -1,2 +1,1 @@
-this string contains all available escape sequence 	
-,<EOF>
+Unclosed string: this string contains all available escape sequence 	

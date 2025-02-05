@@ -325,7 +325,7 @@ STRINGLIT: '"' ('\\' [ntr"\\] | ~["\\\r\n])* '"' {
 
 fragment COMMENT_CONTENT: ( ~[*] | '*' ~[/] | COMMENT )*;
 
-COMMENT: (('//' ~[\r\n]* [\r\n]+) | ('/*' COMMENT_CONTENT '*/')) -> skip ;
+COMMENT: (('//' ~[\r\n]* [\r\n]*) | ('/*' COMMENT_CONTENT '*/')) -> skip ;
 
 // White spaces
 
@@ -333,7 +333,7 @@ WS : [ \t\b\f]+ -> skip ; // skip spaces, tabs
 
 ERROR_CHAR: . {raise ErrorToken(self.text)} ;
 ILLEGAL_ESCAPE: '"' ('\\' [ntr"\\] | ~["\\])* ('\\' ~[tnr"\\] | '\\') { raise IllegalEscape(self.text[1:]) };
-UNCLOSE_STRING: '"' ([#-~ !]| [\r\n\b\f\t] | ('\'' '"'))* [\r\n]+ {
+UNCLOSE_STRING: '"' ([#-~ !]| [\r\n\b\f\t] | ('\'' '"'))* [\r\n]* {
     self.text = self.text[1:]
     self.text = self.text.replace('\n','')
     self.text = self.text.replace('\r','')
