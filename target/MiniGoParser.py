@@ -68,8 +68,8 @@ def serializedATN():
         buf.write("\3\65\5\65\u0229\n\65\3\65\3\65\3\66\3\66\3\66\3\66\3")
         buf.write("\66\3\67\3\67\3\67\5\67\u0235\n\67\3\67\2\7@BDFH8\2\4")
         buf.write("\6\b\n\f\16\20\22\24\26\30\32\34\36 \"$&(*,.\60\62\64")
-        buf.write("\668:<>@BDFHJLNPRTVXZ\\^`bdfhjl\2\13\3\2,/\4\2\66\668")
-        buf.write("8\4\2\16\16\67\67\3\2\3\4\3\2\4\5\3\2\25\32\3\2\20\21")
+        buf.write("\668:<>@BDFHJLNPRTVXZ\\^`bdfhjl\2\13\3\2,/\4\2\66\669")
+        buf.write("9\4\2\16\16\67\67\3\2\3\4\3\2\4\5\3\2\25\32\3\2\20\21")
         buf.write("\3\2\22\24\4\2\21\21\35\35\2\u0257\2q\3\2\2\2\4}\3\2\2")
         buf.write("\2\6\u0084\3\2\2\2\b\u0090\3\2\2\2\n\u0092\3\2\2\2\f\u0098")
         buf.write("\3\2\2\2\16\u00a3\3\2\2\2\20\u00a6\3\2\2\2\22\u00ae\3")
@@ -260,7 +260,7 @@ def serializedATN():
         buf.write("b\62\2\u0209\u0204\3\2\2\2\u0209\u0208\3\2\2\2\u020a_")
         buf.write("\3\2\2\2\u020b\u020d\5\20\t\2\u020c\u020e\5d\63\2\u020d")
         buf.write("\u020c\3\2\2\2\u020d\u020e\3\2\2\2\u020ea\3\2\2\2\u020f")
-        buf.write("\u0217\78\2\2\u0210\u0217\79\2\2\u0211\u0217\7>\2\2\u0212")
+        buf.write("\u0217\79\2\2\u0210\u0217\7:\2\2\u0211\u0217\7>\2\2\u0212")
         buf.write("\u0217\7A\2\2\u0213\u0217\5d\63\2\u0214\u0217\5h\65\2")
         buf.write("\u0215\u0217\7\66\2\2\u0216\u020f\3\2\2\2\u0216\u0210")
         buf.write("\3\2\2\2\u0216\u0211\3\2\2\2\u0216\u0212\3\2\2\2\u0216")
@@ -317,8 +317,8 @@ class MiniGoParser ( Parser ):
                       "SUBASS", "MULASS", "DIVASS", "MODASS", "IF", "ELSE", 
                       "FOR", "RETURN", "FUNC", "TYPE", "STRUCT", "INTERFACE", 
                       "STRING", "INT", "FLOAT", "BOOLEAN", "CONST", "VAR", 
-                      "CONTINUE", "BREAK", "RANGE", "NIL", "ID", "NL", "INTLIT", 
-                      "FLOATLIT", "DECIMAL", "BINARY", "OCTAL", "HEXADECIMAL", 
+                      "CONTINUE", "BREAK", "RANGE", "NIL", "ID", "NL", "HEXADECIMAL", 
+                      "INTLIT", "FLOATLIT", "DECIMAL", "BINARY", "OCTAL", 
                       "BOOLLIT", "TRUE", "FALSE", "STRINGLIT", "COMMENT", 
                       "WS", "ERROR_CHAR", "ILLEGAL_ESCAPE", "UNCLOSE_STRING" ]
 
@@ -444,12 +444,12 @@ class MiniGoParser ( Parser ):
     NIL=51
     ID=52
     NL=53
-    INTLIT=54
-    FLOATLIT=55
-    DECIMAL=56
-    BINARY=57
-    OCTAL=58
-    HEXADECIMAL=59
+    HEXADECIMAL=54
+    INTLIT=55
+    FLOATLIT=56
+    DECIMAL=57
+    BINARY=58
+    OCTAL=59
     BOOLLIT=60
     TRUE=61
     FALSE=62

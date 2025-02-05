@@ -289,6 +289,8 @@ NL:
 
 // Literals
 
+HEXADECIMAL: '0' ('x'|'X') [0-9a-fA-F]+ { self.text = str(int(self.text, 16)) };
+
 INTLIT:
     DECIMAL
 |   BINARY
@@ -298,7 +300,7 @@ INTLIT:
 
 FLOATLIT:
     ([0-9]|[1-9] [0-9]*) '.' [0-9]*
-|   ([0-9]|[1-9] [0-9]*) '.' [0-9] ('e'|'E') ('+'|'-')? [0-9]+
+|   ([0-9]|[1-9] [0-9]*) '.' [0-9]* ('e'|'E') ('+'|'-')? [0-9]+
 ;
 
 DECIMAL:
@@ -310,20 +312,20 @@ BINARY: '0' ('b'|'B') ('1'|'0')+ ;
 
 OCTAL: '0' ('o'|'O') [0-7]+ ;
 
-HEXADECIMAL: '0' ('x'|'X') [0-9a-fA-F]+ ;
-
 BOOLLIT: TRUE | FALSE ;
 
 TRUE: 'true' ;
 FALSE: 'false' ;
 
-STRINGLIT: '"' ('\\' [ntr"\\] | ~["\\])* '"' {
+STRINGLIT: '"' ('\\' [ntr"\\] | ~["\\\r\n])* '"' {
     self.text = self.text[1:-1]
 };
 
 // Comment
 
-COMMENT: (('//' (~[\n])*) | ('/*' .*? '*/')) -> skip ;
+fragment COMMENT_CONTENT: ( ~[*] | '*' ~[/] | COMMENT )*;
+
+COMMENT: (('//' ~[\r\n]* [\r\n]+) | ('/*' COMMENT_CONTENT '*/')) -> skip ;
 
 // White spaces
 
@@ -331,4 +333,9 @@ WS : [ \t\b\f]+ -> skip ; // skip spaces, tabs
 
 ERROR_CHAR: . {raise ErrorToken(self.text)} ;
 ILLEGAL_ESCAPE: '"' ('\\' [ntr"\\] | ~["\\])* ('\\' ~[tnr"\\] | '\\') { raise IllegalEscape(self.text[1:]) };
-UNCLOSE_STRING: '"' ([#-~ !]| [\b\f\t] | ('\'' '"'))* {raise UncloseString(self.text[1:])} ;
+UNCLOSE_STRING: '"' ([#-~ !]| [\r\n\b\f\t] | ('\'' '"'))* [\r\n]+ {
+    self.text = self.text[1:]
+    self.text = self.text.replace('\n','')
+    self.text = self.text.replace('\r','')
+    raise UncloseString(self.text)
+};
