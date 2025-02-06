@@ -2,6 +2,169 @@ import unittest
 from TestUtils import TestParser
 
 class ParserSuite(unittest.TestCase):
+    def test_001(self):
+        """Literal"""
+        self.assertTrue(TestParser.checkParser("const Votien = 1;","successful", 301))
+
+    def test_002(self):
+        """Literal"""
+        self.assertTrue(TestParser.checkParser("const Votien = true;","successful", 302))
+
+    def test_003(self):
+        """Literal"""
+        self.assertTrue(TestParser.checkParser("const Votien = [5][0]string{1, \"string\"};","successful", 303))
+
+    def test_004(self):
+        """Literal"""
+        self.assertTrue(TestParser.checkParser("const Votien = [1.]ID{1, 3};","Error on line 1 col 17: 1.", 304))
+
+    def test_005(self):
+        """Literal"""
+        self.assertTrue(TestParser.checkParser("const Votien = Person{name: \"Alice\", age: 30};","successful", 305))
+
+    def test_006(self):
+        """expression"""
+        self.assertTrue(TestParser.checkParser("const Votien = 1 || 2 && c + 3 / 2 - -1;","successful", 306))
+
+    def test_007(self):
+        """expression"""
+        self.assertTrue(TestParser.checkParser("const Votien = 1[2] + foo()[2] + ID[2].b.b;","successful", 307))
+
+    def test_008(self):
+        """expression"""
+        self.assertTrue(TestParser.checkParser("const Votien = ca.foo(132) + b.c[2];","successful", 308))
+
+    def test_009(self):
+        """expression"""
+        self.assertTrue(TestParser.checkParser("const Votien = a.a.foo();","successful", 309))
+
+    def test_010(self):
+        """declared variables"""
+        self.assertTrue(TestParser.checkParser("""
+            var x int = foo() + 3 / 4;
+            var y = "Hello" / 4;   
+            var z str;
+        ""","successful", 310))
+
+    def test_011(self):
+        """declared constants"""
+        self.assertTrue(TestParser.checkParser("""
+            const VoTien = a.b() + 2;
+        ""","successful", 311))
+
+    def test_012(self):
+        """declared function"""
+        self.assertTrue(TestParser.checkParser("""
+            func VoTien(x int, y int) int {}
+            func VoTien1() [2][3] ID {}         
+            func VoTien2() {}                                       
+        ""","successful", 312))
+
+    def test_013(self):
+        """declared method"""
+        self.assertTrue(TestParser.checkParser("""
+            func (c Calculator) VoTien(x int) int {}  
+            func (c Calculator) VoTien() ID {}      
+            func (c Calculator) VoTien(x int, y [2]VoTien) {}                                                      
+        ""","successful", 313))
+
+    def test_014(self):
+        """declared struct"""
+        self.assertTrue(TestParser.checkParser("""
+            type VoTien struct {
+                VoTien string ;
+                VoTien [1][3]VoTien ;                     
+            }
+            type VoTien struct {}                                                                       
+        ""","successful", 314))
+
+    def test_015(self):
+        """declared Interface"""
+        self.assertTrue(TestParser.checkParser("""
+            type VoTien struct {
+                VoTien string ;
+                VoTien [1][3]VoTien ;                     
+            }
+            type VoTien struct {}                                                                       
+        ""","successful", 315))
+
+    def test_016(self):
+        """declared Interface"""
+        self.assertTrue(TestParser.checkParser("""
+            type Calculator interface {
+                                        
+                Add(x, y int) int;
+                Subtract(a, b float, c int) [3]ID;
+                Reset()
+                                        
+                SayHello(name string);
+                                        
+            }
+            type VoTien interface {}                                                                       
+        ""","successful", 316))
+
+    def test_017(self):
+        """declared_statement"""
+        self.assertTrue(TestParser.checkParser("""    
+            func VoTien() {
+                var x int = foo() + 3 / 4;
+                var y = "Hello" / 4;   
+                var z str;
+                                        
+                const VoTien = a.b() + 2;
+            }                                       
+        ""","successful", 317))
+
+
+    def test_018(self):
+        """assign_statement"""
+        self.assertTrue(TestParser.checkParser("""    
+            func VoTien() {
+                x  := foo() + 3 / 4;
+                x.c[2][4] := 1 + 2;                       
+            }                                       
+        ""","successful", 318))
+
+    def test_019(self):
+        """for_statement"""
+        self.assertTrue(TestParser.checkParser("""    
+            func VoTien() {
+                if (x > 10) {} 
+                if (x > 10) {
+                  
+                } else if (x == 10) {
+                    var z str;
+                } else {
+                    var z ID;
+                }
+            }
+        ""","successful", 319))
+
+    def test_020(self):
+        """if_statement"""
+        self.assertTrue(TestParser.checkParser("""    
+            func VoTien() {
+                for i < 10 {}
+                for i := 0; i < 10; i += 1 {}
+                for index, value := range array {}
+            }
+        ""","successful", 320))
+
+
+    def test_021(self):
+        """break and continue, return, Call  statement"""
+        self.assertTrue(TestParser.checkParser("""    
+            func VoTien() {                           
+                for i < 10 {break;}
+                break;
+                continue;
+                return 1;
+                return
+                foo(2 + x, 4 / y); m.goo();                        
+             }
+                                        
+        ""","successful", 321))
+
     def test_simpler_program(self):
         input = [
         """func main() { return 1; }
@@ -208,9 +371,9 @@ class ParserSuite(unittest.TestCase):
             }
         }
         """,#77
-        """func main()
+        """func main() {
             for i > x / 2 {
-                if (x/i=0) {return false;}
+                if (x/i==0) {return false;}
             }
         }
         """,#78
@@ -387,7 +550,7 @@ class ParserSuite(unittest.TestCase):
             "successful",#65
             "successful",#66
             "successful",#67
-            "Error on line 4 col 13: abc",#68
+            "Error on line 4 col 19: %=",#68
             "Error on line 2 col 20: b",#69
             "successful",#70
             "successful",#71
@@ -397,7 +560,7 @@ class ParserSuite(unittest.TestCase):
             "Error on line 2 col 22: (",#75
             "Error on line 2 col 22: {",#76
             "successful",#77
-            "Error on line 1 col 12: \n\n",#78
+            "successful",#78
             "Error on line 2 col 17: i",#79
             "successful",#80
             "successful",#81

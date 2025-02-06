@@ -1,1 +1,1 @@
-var int;
+const Votien = true;

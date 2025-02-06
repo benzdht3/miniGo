@@ -43,7 +43,7 @@ declareTail: NL* declare declareTail | ;
 
 constDeclare: CONST ID ASSIGN expr SEMICOLON ;
 
-varDeclare: VAR ID (arrayType|varType)? init? SEMICOLON ;
+varDeclare: VAR ID (arrayType|varType|ID)? init? SEMICOLON ;
 
 varType:
     INT
@@ -52,7 +52,7 @@ varType:
 |   BOOLEAN
 ;
 
-arrayType: dimensions+ (varType|STRUCT) ;
+arrayType: dimensions+ (varType|STRUCT|ID) ;
 
 dimensions: LP (INTLIT|ID) RP;
 
@@ -60,16 +60,16 @@ init: ASSIGN expr ;
 
 typeDeclare: TYPE ID (structDeclare|interfaceDeclare) ;
 
-structDeclare: STRUCT LC (field)* RC (NL|SEMICOLON) ;
+structDeclare: STRUCT LC NL* (field)* RC (NL|SEMICOLON) ;
 
 field: NL* ID (varType
             |  structDeclare
             |  arrayType
-            |  interfaceDeclare) (SEMICOLON|NL) ;
+            |  interfaceDeclare) (SEMICOLON|NL|SEMICOLON NL) ;
 
-interfaceDeclare: INTERFACE LC method* RC (SEMICOLON|NL);
+interfaceDeclare: INTERFACE LC NL* method* RC (SEMICOLON|NL);
 
-method: ID LB parameters? RB (varType|arrayType)? ;
+method: ID LB parameters? RB (varType|arrayType|ID)? (SEMICOLON|NL|SEMICOLON NL)*? ;
 
 parameters: ID (varType|arrayType)? paraTail ;
 
@@ -170,11 +170,11 @@ expr6:
 |   expr7
 ;
 
-arrayElement: ID index+ ;
+arrayElement: (literal|funcCall) index+ ;
 
 index: LP expr RP ;
 
-structField: ID '.' ID ;
+structField: (literal|funcCall|arrayElement) '.' expr ;
 
 expr7:
     funcCall
@@ -205,6 +205,7 @@ literal:
 |   arrayLit
 |   structLit
 |   ID
+|   arrayInit
 ;
 
 arrayLit: LC literal literalTail RC literalTail ;
@@ -291,6 +292,10 @@ NL:
 
 HEXADECIMAL: '0' ('x'|'X') [0-9a-fA-F]+ { self.text = str(int(self.text, 16)) };
 
+BINARY: '0' ('b'|'B') ('1'|'0')+ { self.text = str(int(self.text, 2)) };
+
+OCTAL: '0' ('o'|'O') [0-7]+ { self.text = str(int(self.text, 8)) } ;
+
 INTLIT:
     DECIMAL
 |   BINARY
@@ -307,10 +312,6 @@ DECIMAL:
     [0-9]
 |   [1-9] [0-9]+
 ;
-
-BINARY: '0' ('b'|'B') ('1'|'0')+ ;
-
-OCTAL: '0' ('o'|'O') [0-7]+ ;
 
 BOOLLIT: TRUE | FALSE ;
 

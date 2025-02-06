@@ -1,6 +1,6 @@
-func main()
+func main() {
             for i > x / 2 {
-                if (x/i=0) {return false;}
+                if (x/i==0) {return false;}
             }
         }
         

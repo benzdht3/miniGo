@@ -3,6 +3,10 @@ from TestUtils import TestLexer
 
 class LexerSuite(unittest.TestCase):
 
+    def test_036(self):
+        """INT_LIT"""
+        self.assertTrue(TestLexer.checkLexeme("0b000", "0,<EOF>", 84))
+
     def test_001(self):
         """Keywords"""
         self.assertTrue(TestLexer.checkLexeme("if","if,<EOF>",85))
