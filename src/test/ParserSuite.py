@@ -165,6 +165,227 @@ class ParserSuite(unittest.TestCase):
                                         
         ""","successful", 321))
 
+    def test_022(self):
+        """Expressions"""
+        self.assertTrue(TestParser.checkParser("""    
+            const a = 0b11;                         
+        ""","successful", 322))
+
+    def test_023(self):
+        """Expressions"""
+        self.assertTrue(TestParser.checkParser("""    
+            var z VOTIEN = a >= 2 <= "string" > a[2][3] < ID{A: 2} >= [2]S{2};                         
+        ""","successful", 323))
+
+    def test_024(self):
+        """Expressions"""
+        self.assertTrue(TestParser.checkParser("""    
+            var z VOTIEN = a[2][3][a + 2];                         
+        ""","successful", 324))
+
+    def test_025(self):
+        """Expressions"""
+        self.assertTrue(TestParser.checkParser("""    
+            var z VOTIEN = int{1};                         
+        ""","Error on line 2 col 28: int", 325))
+
+    def test_026(self):
+        """Expressions"""
+        self.assertTrue(TestParser.checkParser("""    
+            var z VOTIEN = a.a.a[2].c[2].foo(1, a.b);                         
+        ""","successful", 326))
+
+    def test_027(self):
+        """Expressions"""
+        self.assertTrue(TestParser.checkParser("""    
+            var z VOTIEN = (a + 23) * 3 && (1 + 1);                         
+        ""","successful", 327))
+
+    def test_028(self):
+        """Expressions"""
+        self.assertTrue(TestParser.checkParser("""    
+            const k = ID {a : 2}.c[2] + 2[2] + true.foo() + (2).foo();                         
+        ""","successful", 328))
+
+    def test_029(self):
+        """Expressions"""
+        self.assertTrue(TestParser.checkParser("""    
+            const k = -a + -!-!c - ---[2]int{2};                         
+        ""","successful", 329))
+
+    def test_030(self):
+        """Declared"""
+        self.assertTrue(TestParser.checkParser("""    
+            var a [2][3]int = 2 + 3 / 4;
+        ""","successful", 330))
+
+    def test_031(self):
+        """Declared"""
+        self.assertTrue(TestParser.checkParser("""    
+            var a = a.foo()[2];
+        ""","successful", 331))
+
+    def test_032(self):
+        """Declared"""
+        self.assertTrue(TestParser.checkParser("""    
+            var c [2][3]ID
+            ""","Error on line 2 col 28: \n", 332))
+
+    def test_033(self):
+        """Declared"""
+        self.assertTrue(TestParser.checkParser("""    
+            func Add(x int, y int) int  {};
+""","Error on line 2 col 43: ;", 333))
+        
+    def test_034(self):
+        """Declared"""
+        self.assertTrue(TestParser.checkParser("""
+            func (c c) Add(x, c int) {}
+""","Error on line 2 col 29: ,", 334))
+        
+    def test_035(self):
+        """Declared"""
+        self.assertTrue(TestParser.checkParser("""
+            func (c c) Add(x int) {};
+""","Error on line 2 col 37: ;", 335))
+        
+    def test_036(self):
+        """Statement"""
+        self.assertTrue(TestParser.checkParser("""
+                                    func Add() {
+                                        a.c[2].e[3].k += 2;       
+                                    }""","successful", 336))
+    
+    def test_037(self):
+        """Expressions"""
+        self.assertTrue(TestParser.checkParser("""    
+            var z VOTIEN = a[2, 3];                         
+        ""","Error on line 2 col 31: ,", 337))
+
+    def test_038(self):
+        """Expressions"""
+        self.assertTrue(TestParser.checkParser("""    
+            var z VOTIEN = [2]int{};                         
+        ""","Error on line 2 col 35: }", 338))
+
+    def test_039(self):
+        """Expressions"""
+        self.assertTrue(TestParser.checkParser("""    
+            var z VOTIEN = ID {};                         
+        ""","successful", 339))
+
+    def test_040(self):
+        """Declared"""
+        self.assertTrue(TestParser.checkParser("""    
+            type Calculator struct {
+                c Calculator
+                c Cal a int;         
+            }
+""","Error on line 4 col 23: a", 340))
+        
+    def test_041(self):
+        """Statement"""
+        self.assertTrue(TestParser.checkParser("""
+                                    func Add() {
+                                        a.foo() += 2;       
+                                    }""","Error on line 3 col 49: +=", 341))
+        
+    def test_042(self):
+        """Statement"""
+        self.assertTrue(TestParser.checkParser("""
+                                    func Add() {
+                                        a[2].b := 2;       
+                                    }""","successful", 342))
+        
+    def test_043(self):
+        """Statement"""
+        self.assertTrue(TestParser.checkParser("""
+                                    func Add() {
+                                        if (x.foo().b[2]) 
+                                        {
+                                            if (){}
+                                        } 
+                                    }""","Error on line 5 col 49: )", 343))
+    
+    def test_044(self):
+        """Statement"""
+        self.assertTrue(TestParser.checkParser("""
+                                    func Add() {
+                                        if (x.foo().b[2]) 
+                                        {
+                                            if (1){} else {}
+
+                                        } else if(2)
+                                        {
+                                        }
+                                    }""","successful", 344))
+        
+    def test_045(self):
+        """Statement"""
+        self.assertTrue(TestParser.checkParser("""
+                                    func Add() {
+                                        if (x.foo().b[2]) 
+                                        {
+                                        } else if(1)
+                                        {
+                                        }else if(1)
+                                        {
+                                        }else if(2)
+                                        {
+                                        }else 
+                                        {
+                                        }
+                                    }""","successful", 345))
+        
+    def test_046(self):
+        """Statement"""
+        self.assertTrue(TestParser.checkParser("""
+                                    func Add() {
+                                        for true {}
+                                    }""","successful", 346))
+        
+    def test_047(self):
+        """Statement"""
+        self.assertTrue(TestParser.checkParser("""
+                                    func Add() {
+                                        for const i = 0; i < 10; i += 1 {
+                                            // loop body
+                                        }
+                                    }""","Error on line 3 col 45: const", 347))
+        
+    def test_048(self):
+        """Statement"""
+        self.assertTrue(TestParser.checkParser("""
+                                    func Add() {
+                                        for var i = 0; i < 10; i += 1 {
+                                            // loop body
+                                        }
+                                    }""","successful", 348))
+        
+    def test_049(self):
+        """Statement"""
+        self.assertTrue(TestParser.checkParser("""
+                                    func Add() {
+                                        for index, value := range arr[2] {
+                                        }
+                                    }""","successful", 349))
+    
+    def test_050(self):
+        """Statement"""
+        self.assertTrue(TestParser.checkParser("""
+                                    func Add() {
+                                        a[2][3].foo(2 + 3, a {a:2})
+                                    }""","successful", 350))
+       
+    def test_051(self):
+        """Statement"""
+        self.assertTrue(TestParser.checkParser("""
+                                    func Add() {
+                                        if (1) {}
+                                        else if(2) {return string;}
+                                        else if(3) {reutrn int;}
+                                    }""","Error on line 4 col 60: string", 351))
+
     def test_simpler_program(self):
         input = [
         """func main() { return 1; }
@@ -298,7 +519,7 @@ class ParserSuite(unittest.TestCase):
         """func foo()""",#61
         """func isPrime(x int) {}
         """,#62
-        """func foo(x, y string, z boolean) {}
+        """func foo(x int, y string, z boolean) {}
         """,#63
         """func foo(x var) {}
         """,#64

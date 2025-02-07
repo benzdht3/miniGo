@@ -3,6 +3,39 @@ from TestUtils import TestLexer
 
 class LexerSuite(unittest.TestCase):
 
+    def test_014(self):
+        """skip"""
+        self.assertTrue(TestLexer.checkLexeme("\t\f\r ", "<EOF>", 77))
+        
+    def test_015(self):
+        """INT_LIT"""
+        self.assertTrue(TestLexer.checkLexeme("0b000", "0,<EOF>", 78))
+    
+    def test_016(self):
+        """ILLEGAL_ESCAPE"""
+        self.assertTrue(TestLexer.checkLexeme(""" "\\" \\\\ \\q" """, "Illegal escape in string: \\\" \\\\ \\q", 79))
+    
+    def test_017(self):
+        """Keywords"""
+        self.assertTrue(TestLexer.checkLexeme(""" 
+        /* a * */
+    """, "\n,\n,<EOF>", 80))
+    
+    def test_018(self):
+        """FLOAT_LIT"""
+        self.assertTrue(TestLexer.checkLexeme("010.010e-020", "0,10.010e-0,20,<EOF>", 81))
+    
+    def test_019(self):
+        """skip"""
+        self.assertTrue(TestLexer.checkLexeme(""" /*
+        /* a */ /* b */ 
+        // 321231
+        */ if /* */ /* */""", "if,<EOF>", 82))
+    def test_020(self):
+        """Keywords"""
+        self.assertTrue(TestLexer.checkLexeme(""" // /*
+                                       */""", "\n,*,/,<EOF>", 83))
+
     def test_036(self):
         """INT_LIT"""
         self.assertTrue(TestLexer.checkLexeme("0b000", "0,<EOF>", 84))
@@ -41,7 +74,7 @@ class LexerSuite(unittest.TestCase):
         
     def test_009(self):
         """COMEMENTS"""
-        self.assertTrue(TestLexer.checkLexeme("// VOTIEN\n","<EOF>",93))
+        self.assertTrue(TestLexer.checkLexeme("// VOTIEN","<EOF>",93))
 
     def test_010(self):
         """COMEMENTS"""
@@ -115,7 +148,7 @@ class LexerSuite(unittest.TestCase):
         self.assertTrue(TestLexer.checkLexeme("1.1e.123","1.1,e,.,123,<EOF>",124))
         self.assertTrue(TestLexer.checkLexeme("123e","123,e,<EOF>",125))
         self.assertTrue(TestLexer.checkLexeme("123.e123","123.e123,<EOF>",126))
-        self.assertTrue(TestLexer.checkLexeme("123.0e-001","123.0e-001,<EOF>",127))
+        self.assertTrue(TestLexer.checkLexeme("123.0e-001","123.0e-0,0,1,<EOF>",127))
         self.assertTrue(TestLexer.checkLexeme("123.0e+123","123.0e+123,<EOF>",128))
         self.assertTrue(TestLexer.checkLexeme("123E-e","123,E,-,e,<EOF>",129))
         self.assertTrue(TestLexer.checkLexeme("123.456","123.456,<EOF>",130))

@@ -39,11 +39,11 @@ declare:
 |   funcDeclare
 ;
 
-declareTail: NL* declare declareTail | ;
+declareTail: NL* declare NL* declareTail | ;
 
 constDeclare: CONST ID ASSIGN expr SEMICOLON ;
 
-varDeclare: VAR ID (arrayType|varType|ID)? init? SEMICOLON ;
+varDeclare: VAR ID (arrayType|varType|ID)? init? (SEMICOLON| SEMICOLON NL) ;
 
 varType:
     INT
@@ -56,7 +56,7 @@ arrayType: dimensions+ (varType|STRUCT|ID) ;
 
 dimensions: LP (INTLIT|ID) RP;
 
-init: ASSIGN expr ;
+init: ASSIGN (expr|arrayInit) ;
 
 typeDeclare: TYPE ID (structDeclare|interfaceDeclare) ;
 
@@ -65,7 +65,8 @@ structDeclare: STRUCT LC NL* (field)* RC (NL|SEMICOLON) ;
 field: NL* ID (varType
             |  structDeclare
             |  arrayType
-            |  interfaceDeclare) (SEMICOLON|NL|SEMICOLON NL) ;
+            |  interfaceDeclare
+            |  ID) (SEMICOLON|NL|SEMICOLON NL) ;
 
 interfaceDeclare: INTERFACE LC NL* method* RC (SEMICOLON|NL);
 
@@ -75,7 +76,11 @@ parameters: ID (varType|arrayType)? paraTail ;
 
 paraTail: COMMA parameters paraTail | ;
 
-funcDeclare: FUNC methodDeclare? method LC NL* (stmt NL*)* RC NL ;
+funcDeclare: FUNC methodDeclare? ID LB funcParams? RB (varType|arrayType|ID)? (SEMICOLON|NL|SEMICOLON NL)*? LC NL* (stmt NL?)* RC NL? ;
+
+funcParams: ID (varType|arrayType) funcParamTail ;
+
+funcParamTail: COMMA funcParams funcParamTail | ;
 
 methodDeclare: LB ID ID RB ;
 
@@ -91,7 +96,7 @@ stmt:
 |    contstmt
 |    funcCall
 |    methodCall
-|    returnstmt) (SEMICOLON NL|SEMICOLON|NL) ;
+|    returnstmt) (NL |SEMICOLON | SEMICOLON NL) ;
 
 assignment: lhs assignOp (expr|arrayInit) ;
 
@@ -110,10 +115,10 @@ assignOp:
 |   MODASS
 ;
 
-ifstmt: IF LB expr RB LC NL* stmt* RC elsestmt? ;
+ifstmt: IF LB expr RB NL* LC NL* stmt* RC NL? elsestmt? ;
 
 elsestmt:
-    ELSE (ifstmt | LC NL* stmt* RC) ;
+    ELSE (ifstmt | NL* LC NL* stmt* RC NL*) ;
 
 forstmt:
     FOR (expr
@@ -124,7 +129,7 @@ initFor:
     (assignment
 |    VAR ID (varType|arrayType)? init) SEMICOLON expr SEMICOLON assignment ;
 
-rangeFor: ('index'|'_') COMMA ('value'|'_') COLON ASSIGN RANGE (ID|arrayLit) ;
+rangeFor: ('index'|'_') COMMA ('value'|'_') COLON ASSIGN RANGE (ID|arrayLit|arrayElement) ;
 
 breakstmt: BREAK ;
 
@@ -160,13 +165,13 @@ expr4:
 ;
 
 expr5:
-    <assoc=right> (NOT|SUBTR) expr6
+    <assoc=right> (NOT|SUBTR)* expr6
 |   expr6
 ;
 
 expr6:
     arrayElement
-|   structField
+|   methodCall
 |   expr7
 ;
 
@@ -174,11 +179,11 @@ arrayElement: (literal|funcCall) index+ ;
 
 index: LP expr RP ;
 
-structField: (literal|funcCall|arrayElement) '.' expr ;
+structField: (literal|arrayElement) '.' (structField|literal|arrayElement) ;
 
 expr7:
     funcCall
-|   methodCall
+|   structField
 |   expr8
 ;
 
@@ -188,7 +193,7 @@ arguments: expr argTail ;
 
 argTail: COMMA expr argTail | ;
 
-methodCall: ID '.' funcCall ;
+methodCall: LB? (literal|funcCall|arrayElement|ID) RB? '.' expr ;
 
 expr8:
     LB expr RB
@@ -199,6 +204,10 @@ arrayInit: arrayType arrayLit? ;
 
 literal:
     INTLIT
+|   DECIMAL
+|   BINARY
+|   OCTAL
+|   HEXADECIMAL
 |   FLOATLIT
 |   BOOLLIT
 |   STRINGLIT
@@ -219,6 +228,14 @@ structElement: ID COLON expr elementTail;
 elementTail: COMMA structElement | ;
 
 // LEXICAL
+
+// White spaces
+
+WS : [ \t\f\r]+ -> skip ; // skip spaces, tabs
+
+// Newline
+
+NL: '\n' ;
 
 // Seperators
 
@@ -280,14 +297,6 @@ NIL: 'nil' ;
 
 ID: [a-zA-Z_] [a-zA-Z_0-9]* ;
 
-// Newline
-
-NL:
-    '\n'
-|   '\r\n'
-|   '\r'
-;
-
 // Literals
 
 HEXADECIMAL: '0' ('x'|'X') [0-9a-fA-F]+ { self.text = str(int(self.text, 16)) };
@@ -305,7 +314,7 @@ INTLIT:
 
 FLOATLIT:
     ([0-9]|[1-9] [0-9]*) '.' [0-9]*
-|   ([0-9]|[1-9] [0-9]*) '.' [0-9]* ('e'|'E') ('+'|'-')? [0-9]+
+|   ([0-9]|[1-9] [0-9]*) '.' [0-9]* ('e'|'E') ('+'|'-')? ([0-9] | [1-9] [0-9]+)
 ;
 
 DECIMAL:
@@ -326,11 +335,7 @@ STRINGLIT: '"' ('\\' [ntr"\\] | ~["\\\r\n])* '"' {
 
 fragment COMMENT_CONTENT: ( ~[*] | '*' ~[/] | COMMENT )*;
 
-COMMENT: (('//' ~[\r\n]* [\r\n]*) | ('/*' COMMENT_CONTENT '*/')) -> skip ;
-
-// White spaces
-
-WS : [ \t\b\f]+ -> skip ; // skip spaces, tabs
+COMMENT: (('//' ~[\r\n]* '\r'?) | ('/*' COMMENT_CONTENT '*/' '\r'?)) -> skip ;
 
 ERROR_CHAR: . {raise ErrorToken(self.text)} ;
 ILLEGAL_ESCAPE: '"' ('\\' [ntr"\\] | ~["\\])* ('\\' ~[tnr"\\] | '\\') { raise IllegalEscape(self.text[1:]) };
