@@ -5,9 +5,18 @@ from lexererr import *
 }
 
 @lexer::members {
+def __init__(self, input=None, output:TextIO = sys.stdout):
+    super().__init__(input, output)
+    self.checkVersion("4.9.2")
+    self._interp = LexerATNSimulator(self, self.atn, self.decisionsToDFA, PredictionContextCache())
+    self._actions = None
+    self._predicates = None
+    self.preType = None
+
 def emit(self):
     tk = self.type
-    if tk == self.UNCLOSE_STRING:
+    self.preType = tk;
+    if tk == self.UNCLOSE_STRING:       
         result = super().emit();
         raise UncloseString(result.text);
     elif tk == self.ILLEGAL_ESCAPE:
@@ -15,7 +24,7 @@ def emit(self):
         raise IllegalEscape(result.text);
     elif tk == self.ERROR_CHAR:
         result = super().emit();
-        raise ErrorToken(result.text);
+        raise ErrorToken(result.text); 
     else:
         return super().emit();
 }
@@ -41,9 +50,11 @@ declare:
 
 declareTail: NL* declare NL* declareTail | ;
 
-constDeclare: CONST ID ASSIGN expr SEMICOLON ;
+constDeclare: CONST (ID|'value'|'index') init (NL|SEMICOLON|SEMICOLON NL) ;
 
-varDeclare: VAR ID (arrayType|varType|ID)? init? (SEMICOLON| SEMICOLON NL) ;
+varDeclare: VAR (ID|'value'|'index') modify (NL|SEMICOLON|SEMICOLON NL) ;
+
+modify: (arrayType|varType|ID|'value'|'index') | init | ((arrayType|varType|ID|'value'|'index') init) ;
 
 varType:
     INT
@@ -52,62 +63,57 @@ varType:
 |   BOOLEAN
 ;
 
-arrayType: dimensions+ (varType|STRUCT|ID) ;
+arrayType: dimensions+ (varType|STRUCT|(ID|'value'|'index')) ;
 
-dimensions: LP (INTLIT|ID) RP;
+dimensions: LP (INTLIT|(ID|'value'|'index')) RP;
 
-init: ASSIGN (expr|arrayInit) ;
+init: INITOP (expr|arrayInit) ;
 
-typeDeclare: TYPE ID (structDeclare|interfaceDeclare) ;
+typeDeclare: TYPE (ID|'value'|'index') (structDeclare | interfaceDeclare) ;
 
-structDeclare: STRUCT LC NL* (field)* RC (NL|SEMICOLON) ;
+structDeclare: STRUCT LC field+ RC (SEMICOLON|NL|SEMICOLON NL);
 
-field: NL* ID (varType
-            |  structDeclare
-            |  arrayType
-            |  interfaceDeclare
-            |  ID) (SEMICOLON|NL|SEMICOLON NL) ;
+field: 
+   (ID|'value'|'index') (varType
+                    |    structDeclare
+                    |    arrayType
+                    |    interfaceDeclare
+                    |    ID |'value' |'index') (SEMICOLON|NL|SEMICOLON NL) ;
 
-interfaceDeclare: INTERFACE LC NL* method* RC (SEMICOLON|NL);
+interfaceDeclare: INTERFACE LC NL* (method (SEMICOLON|NL|SEMICOLON NL))+ RC (SEMICOLON|NL);
 
-method: ID LB parameters? RB (varType|arrayType|ID)? (SEMICOLON|NL|SEMICOLON NL)*? ;
+method: (ID|'value'|'index') LB (parameters paraTail)? RB (varType|arrayType|(ID|'value'|'index'))? ;
 
-parameters: ID (varType|arrayType)? paraTail ;
+parameters: (ID|'value'|'index') (COMMA (ID|'value'|'index'))* (varType|arrayType|(ID|'value'|'index')) ;
 
 paraTail: COMMA parameters paraTail | ;
 
-funcDeclare: FUNC methodDeclare? ID LB funcParams? RB (varType|arrayType|ID)? (SEMICOLON|NL|SEMICOLON NL)*? LC NL* (stmt NL?)* RC NL? ;
+funcDeclare: FUNC methodDeclare? method LC NL* stmt* RC (NL|SEMICOLON|SEMICOLON NL)? ;
 
-funcParams: ID (varType|arrayType) funcParamTail ;
-
-funcParamTail: COMMA funcParams funcParamTail | ;
-
-methodDeclare: LB ID ID RB ;
+methodDeclare: LB (ID|'value'|'index') (ID|'value'|'index') RB ;
 
 // STATEMENTS
 
 stmt:
-    (varDeclare
-|    constDeclare
-|    assignment
+    (varDeclare|constDeclare)
+|   ((assignment
 |    ifstmt
 |    forstmt
 |    breakstmt
 |    contstmt
 |    funcCall
 |    methodCall
-|    returnstmt) (NL |SEMICOLON | SEMICOLON NL) ;
+|    returnstmt) (NL|SEMICOLON|(SEMICOLON NL))) ;
 
-assignment: lhs assignOp (expr|arrayInit) ;
+assignment: lhs assignOp+ (expr|arrayInit) ;
 
 lhs:
-    ID
-|   arrayElement
-|   structField
+    (ID|'value'|'index') index*
+|   ((ID|'value'|'index')|(ID|'value'|'index') index+) (DOT ((ID|'value'|'index') index*))+
 ;
 
 assignOp:
-    COLON ASSIGN
+    ASSIGN
 |   ADDASS
 |   SUBASS
 |   MULASS
@@ -115,7 +121,7 @@ assignOp:
 |   MODASS
 ;
 
-ifstmt: IF LB expr RB NL* LC NL* stmt* RC NL? elsestmt? ;
+ifstmt: IF LB expr RB NL* LC NL* stmt* RC elsestmt? ;
 
 elsestmt:
     ELSE (ifstmt | NL* LC NL* stmt* RC NL*) ;
@@ -126,10 +132,12 @@ forstmt:
     |    rangeFor) LC NL* stmt* RC ;
 
 initFor:
-    (assignment
-|    VAR ID (varType|arrayType)? init) SEMICOLON expr SEMICOLON assignment ;
+    (assignment_for
+|   (VAR (ID|'value'|'index') (varType|arrayType)? init)) (SEMICOLON|NL) expr (SEMICOLON|NL) assignment_for ;
 
-rangeFor: ('index'|'_') COMMA ('value'|'_') COLON ASSIGN RANGE (ID|arrayLit|arrayElement) ;
+assignment_for: ID assignOp literal ;
+
+rangeFor: ('index'|'_') COMMA ('value'|'_') ASSIGN RANGE ((ID|'value'|'index')|literal|arrayElement) ;
 
 breakstmt: BREAK ;
 
@@ -171,33 +179,36 @@ expr5:
 
 expr6:
     arrayElement
-|   methodCall
+|   methodCallExpr
 |   expr7
 ;
 
-arrayElement: (literal|funcCall) index+ ;
+arrayElement: (expr8|funcCall) index+ ;
 
 index: LP expr RP ;
 
-structField: (literal|arrayElement) '.' (structField|literal|arrayElement) ;
+structField: ((ID|'value'|'index')|(ID|'value'|'index') index+) (DOT ((ID|funcCall) index*))+ ;
 
 expr7:
-    funcCall
-|   structField
+    structField
+|   funcCall
 |   expr8
 ;
 
-funcCall: ID LB arguments? RB ;
+funcCall: (ID|'value'|'index') LB arguments? RB ;
 
 arguments: expr argTail ;
 
 argTail: COMMA expr argTail | ;
 
-methodCall: LB? (literal|funcCall|arrayElement|ID) RB? '.' expr ;
+methodCallExpr: (funcCall|ID|'value'|'index'|((ID|'value'|'index'|arrayInit) index+)| structLit | BOOLLIT | LB expr RB) DOT (funcCall|ID index*|methodCallExpr) ;
+
+methodCall: (ID index*|'value'|'index') DOT expr SEMICOLON?;
 
 expr8:
     LB expr RB
 |   literal
+|   arrayInit
 ;
 
 arrayInit: arrayType arrayLit? ;
@@ -211,19 +222,20 @@ literal:
 |   FLOATLIT
 |   BOOLLIT
 |   STRINGLIT
-|   arrayLit
 |   structLit
 |   ID
-|   arrayInit
+|   'value'
+|   'index'
+|   NIL
 ;
 
-arrayLit: LC literal literalTail RC literalTail ;
+arrayLit: LC (literal|arrayLit) literalTail RC literalTail ;
 
-literalTail: COMMA literal literalTail | ;
+literalTail: COMMA (literal|arrayLit) literalTail | ;
 
-structLit: ID LC structElement? RC ;
+structLit: (ID|'value'|'index') LC structElement? RC ;
 
-structElement: ID COLON expr elementTail;
+structElement: (ID|'value'|'index') COLON expr elementTail;
 
 elementTail: COMMA structElement | ;
 
@@ -235,7 +247,10 @@ WS : [ \t\f\r]+ -> skip ; // skip spaces, tabs
 
 // Newline
 
-NL: '\n' ;
+NL: '\r'? '\n' {
+    if self.preType in [self.ID, self.INTLIT, self.FLOATLIT, self.STRINGLIT, self.BOOLLIT, self.RETURN, self.BREAK, self.CONTINUE, self.RB, self.RC, self.RP, self.NIL, self.STRING, self.INT, self.FLOAT, self.BOOLEAN]: self.text = ';'
+    else: self.skip()
+};
 
 // Seperators
 
@@ -248,6 +263,7 @@ RP: ']' ;
 COMMA: ',' ;
 SEMICOLON: ';' ;
 COLON: ':' ;
+DOT: '.' ;
 
 // Operators
 
@@ -265,7 +281,8 @@ GREATEREQ: '>=' ;
 AND: '&&' ;
 OR: '||' ;
 NOT: '!' ;
-ASSIGN: '=' ;
+INITOP: '=' ;
+ASSIGN: ':=' ;
 ADDASS: '+=' ;
 SUBASS: '-=' ;
 MULASS: '*=' ;
@@ -293,17 +310,15 @@ BREAK: 'break' ;
 RANGE: 'range' ;
 NIL: 'nil' ;
 
+BOOLLIT: TRUE | FALSE ;
+TRUE: 'true' ;
+FALSE: 'false' ;
+
 // Identifier
 
 ID: [a-zA-Z_] [a-zA-Z_0-9]* ;
 
 // Literals
-
-HEXADECIMAL: '0' ('x'|'X') [0-9a-fA-F]+ { self.text = str(int(self.text, 16)) };
-
-BINARY: '0' ('b'|'B') ('1'|'0')+ { self.text = str(int(self.text, 2)) };
-
-OCTAL: '0' ('o'|'O') [0-7]+ { self.text = str(int(self.text, 8)) } ;
 
 INTLIT:
     DECIMAL
@@ -313,8 +328,8 @@ INTLIT:
 ;
 
 FLOATLIT:
-    ([0-9]|[1-9] [0-9]*) '.' [0-9]*
-|   ([0-9]|[1-9] [0-9]*) '.' [0-9]* ('e'|'E') ('+'|'-')? ([0-9] | [1-9] [0-9]+)
+    [0-9]+ DOT [0-9]*
+|   [0-9]+ DOT [0-9]* ('e'|'E') ('+'|'-')? [0-9]+
 ;
 
 DECIMAL:
@@ -322,26 +337,22 @@ DECIMAL:
 |   [1-9] [0-9]+
 ;
 
-BOOLLIT: TRUE | FALSE ;
+HEXADECIMAL: '0' ('x'|'X') [0-9a-fA-F]+ ;
 
-TRUE: 'true' ;
-FALSE: 'false' ;
+BINARY: '0' ('b'|'B') ('1'|'0')+ ;
 
-STRINGLIT: '"' ('\\' [ntr"\\] | ~["\\\r\n])* '"' {
-    self.text = self.text[1:-1]
-};
+OCTAL: '0' ('o'|'O') [0-7]+ ;
+
+STRINGLIT: '"' ('\\' [ntr"\\] | ~["\\\r\n])* '"' ;
 
 // Comment
 
 fragment COMMENT_CONTENT: ( ~[*] | '*' ~[/] | COMMENT )*;
 
-COMMENT: (('//' ~[\r\n]* '\r'?) | ('/*' COMMENT_CONTENT '*/' '\r'?)) -> skip ;
+COMMENT: (('//' ~[\r\n]* ) | ('/*' COMMENT_CONTENT '*/')) -> skip ;
 
-ERROR_CHAR: . {raise ErrorToken(self.text)} ;
-ILLEGAL_ESCAPE: '"' ('\\' [ntr"\\] | ~["\\])* ('\\' ~[tnr"\\] | '\\') { raise IllegalEscape(self.text[1:]) };
-UNCLOSE_STRING: '"' ([#-~ !]| [\r\n\b\f\t] | ('\'' '"'))* [\r\n]* {
-    self.text = self.text[1:]
-    self.text = self.text.replace('\n','')
-    self.text = self.text.replace('\r','')
+ILLEGAL_ESCAPE: '"' ('\\' [ntr"\\] | ~["\\])* ('\\' ~[tnr"\\] | '\\') { raise IllegalEscape(self.text) };
+UNCLOSE_STRING: '"' ([#-~ !]| [\b\f\t] | ('\'' '"'))* {
     raise UncloseString(self.text)
 };
+ERROR_CHAR: . {raise ErrorToken(self.text)} ;

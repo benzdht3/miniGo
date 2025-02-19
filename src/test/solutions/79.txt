@@ -1,1 +1,1 @@
-Illegal escape in string: \" \\ \q
+Illegal escape in string: "\" \\ \q

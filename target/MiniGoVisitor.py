@@ -39,6 +39,11 @@ class MiniGoVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by MiniGoParser#modify.
+    def visitModify(self, ctx:MiniGoParser.ModifyContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by MiniGoParser#varType.
     def visitVarType(self, ctx:MiniGoParser.VarTypeContext):
         return self.visitChildren(ctx)
@@ -99,16 +104,6 @@ class MiniGoVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by MiniGoParser#funcParams.
-    def visitFuncParams(self, ctx:MiniGoParser.FuncParamsContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by MiniGoParser#funcParamTail.
-    def visitFuncParamTail(self, ctx:MiniGoParser.FuncParamTailContext):
-        return self.visitChildren(ctx)
-
-
     # Visit a parse tree produced by MiniGoParser#methodDeclare.
     def visitMethodDeclare(self, ctx:MiniGoParser.MethodDeclareContext):
         return self.visitChildren(ctx)
@@ -151,6 +146,11 @@ class MiniGoVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by MiniGoParser#initFor.
     def visitInitFor(self, ctx:MiniGoParser.InitForContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by MiniGoParser#assignment_for.
+    def visitAssignment_for(self, ctx:MiniGoParser.Assignment_forContext):
         return self.visitChildren(ctx)
 
 
@@ -241,6 +241,11 @@ class MiniGoVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by MiniGoParser#argTail.
     def visitArgTail(self, ctx:MiniGoParser.ArgTailContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by MiniGoParser#methodCallExpr.
+    def visitMethodCallExpr(self, ctx:MiniGoParser.MethodCallExprContext):
         return self.visitChildren(ctx)
 
 

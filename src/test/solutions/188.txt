@@ -1,1 +1,1 @@
-DeprecationWarning: no more error ha ha ^.^,<EOF>
+"DeprecationWarning: no more error ha ha ^.^",<EOF>

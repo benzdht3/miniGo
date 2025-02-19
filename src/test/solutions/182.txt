@@ -1,2 +1,2 @@
-Illegal escape in string: this string contains all available escape sequence 	
+Illegal escape in string: "this string contains all available escape sequence 	
  until reach illegal escape \x

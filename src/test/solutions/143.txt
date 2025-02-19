@@ -1,1 +1,1 @@
-Unclosed string: String with newline 
+Unclosed string: "String with newline 

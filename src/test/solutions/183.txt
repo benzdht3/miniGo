@@ -1,1 +1,1 @@
-multiple strings,first string,second string,<EOF>
+"multiple strings","first string","second string",<EOF>

@@ -1,1 +1,1 @@
-String with double quote \",<EOF>
+"String with double quote \"",<EOF>

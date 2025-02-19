@@ -1,1 +1,1 @@
-String with backslash \\,<EOF>
+"String with backslash \\",<EOF>

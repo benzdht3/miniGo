@@ -1,1 +1,1 @@
-foo,(,abc,,,123,,,ok,),<EOF>
+foo,(,abc,,,123,,,"ok",),<EOF>

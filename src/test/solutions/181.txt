@@ -1,1 +1,1 @@
-Unclosed string: this string contains all available escape sequence 	
+Unclosed string: "this string contains all available escape sequence 	

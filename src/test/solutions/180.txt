@@ -1,1 +1,1 @@
-string,str,<,-,String things,<EOF>
+string,str,<,-,"String things",<EOF>

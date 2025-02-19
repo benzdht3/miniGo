@@ -3,27 +3,52 @@ from TestUtils import TestLexer
 
 class LexerSuite(unittest.TestCase):
 
+    def test_112(self):
+        self.assertTrue(TestLexer.checkLexeme("""
+           \"12\"\"
+""", "\"12\",Unclosed string: \"", 1012))
+
+    def test_094(self):
+        """UNCLOSE_STRING"""
+        self.assertTrue(TestLexer.checkLexeme(""" "123
+        " """, "Unclosed string: \"123", 72))
+
+    def test_079(self):
+        """COMMENT"""
+        self.assertTrue(TestLexer.checkLexeme("""
+        /* test
+        */ a /* */
+""", "a,;,<EOF>", 73))
+
+    def test_071(self):
+        """Keywords"""
+        self.assertTrue(TestLexer.checkLexeme(""" 
+        /* a * */
+ """, "<EOF>", 74))
+
+    def test_030(self):
+        """INT_LIT"""
+        self.assertTrue(TestLexer.checkLexeme("0452.", "0452.,<EOF>", 75))
+
+    def test_013(self):
+        """Operators"""
+        self.assertTrue(TestLexer.checkLexeme("+ - * / % == != > < <= >= && || ! = += -= *= /= %= :=", "+,-,*,/,%,==,!=,>,<,<=,>=,&&,||,!,=,+=,-=,*=,/=,%=,:=,<EOF>", 76))
+
     def test_014(self):
         """skip"""
         self.assertTrue(TestLexer.checkLexeme("\t\f\r ", "<EOF>", 77))
         
     def test_015(self):
         """INT_LIT"""
-        self.assertTrue(TestLexer.checkLexeme("0b000", "0,<EOF>", 78))
+        self.assertTrue(TestLexer.checkLexeme("0b000", "0b000,<EOF>", 78))
     
     def test_016(self):
         """ILLEGAL_ESCAPE"""
-        self.assertTrue(TestLexer.checkLexeme(""" "\\" \\\\ \\q" """, "Illegal escape in string: \\\" \\\\ \\q", 79))
-    
-    def test_017(self):
-        """Keywords"""
-        self.assertTrue(TestLexer.checkLexeme(""" 
-        /* a * */
-    """, "\n,\n,<EOF>", 80))
+        self.assertTrue(TestLexer.checkLexeme(""" "\\" \\\\ \\q" """, "Illegal escape in string: \"\\\" \\\\ \\q", 79))
     
     def test_018(self):
         """FLOAT_LIT"""
-        self.assertTrue(TestLexer.checkLexeme("010.010e-020", "0,10.010e-0,20,<EOF>", 81))
+        self.assertTrue(TestLexer.checkLexeme("010.010e-020", "010.010e-020,<EOF>", 81))
     
     def test_019(self):
         """skip"""
@@ -34,11 +59,11 @@ class LexerSuite(unittest.TestCase):
     def test_020(self):
         """Keywords"""
         self.assertTrue(TestLexer.checkLexeme(""" // /*
-                                       */""", "\n,*,/,<EOF>", 83))
+                                       */""", "*,/,<EOF>", 83))
 
     def test_036(self):
         """INT_LIT"""
-        self.assertTrue(TestLexer.checkLexeme("0b000", "0,<EOF>", 84))
+        self.assertTrue(TestLexer.checkLexeme("0b000", "0b000,<EOF>", 84))
 
     def test_001(self):
         """Keywords"""
@@ -62,7 +87,7 @@ class LexerSuite(unittest.TestCase):
         
     def test_006(self):
         """Literals INT 16*1 + 1 = 17"""
-        self.assertTrue(TestLexer.checkLexeme("0x11","17,<EOF>",90))
+        self.assertTrue(TestLexer.checkLexeme("0x11","0x11,<EOF>",90))
     
     def test_007(self):
         """Literals FLOAT"""
@@ -70,7 +95,7 @@ class LexerSuite(unittest.TestCase):
     
     def test_008(self):
         """Literals String"""
-        self.assertTrue(TestLexer.checkLexeme(""" "VOTIEN \\r" ""","VOTIEN \\r,<EOF>",92))
+        self.assertTrue(TestLexer.checkLexeme(""" "VOTIEN \\r" ""","\"VOTIEN \\r\",<EOF>", 92))
         
     def test_009(self):
         """COMEMENTS"""
@@ -86,11 +111,11 @@ class LexerSuite(unittest.TestCase):
 
     def test_012(self):
         """UNCLOSE_STRING"""
-        self.assertTrue(TestLexer.checkLexeme(""" "VOTIEN\n" ""","Unclosed string: VOTIEN",95))
+        self.assertTrue(TestLexer.checkLexeme(""" "VOTIEN\n" ""","Unclosed string: \"VOTIEN", 95))
     
     def test_013(self):
         """ILLEGAL_ESCAPE"""
-        self.assertTrue(TestLexer.checkLexeme(""" "VOTIEN\\f" ""","Illegal escape in string: VOTIEN\\f",96))
+        self.assertTrue(TestLexer.checkLexeme(""" "VOTIEN\\f" ""","Illegal escape in string: \"VOTIEN\\f", 96))
 
     def test_lower_identifier(self):
         """test identifiers"""
@@ -148,7 +173,7 @@ class LexerSuite(unittest.TestCase):
         self.assertTrue(TestLexer.checkLexeme("1.1e.123","1.1,e,.,123,<EOF>",124))
         self.assertTrue(TestLexer.checkLexeme("123e","123,e,<EOF>",125))
         self.assertTrue(TestLexer.checkLexeme("123.e123","123.e123,<EOF>",126))
-        self.assertTrue(TestLexer.checkLexeme("123.0e-001","123.0e-0,0,1,<EOF>",127))
+        self.assertTrue(TestLexer.checkLexeme("123.0e-001","123.0e-001,<EOF>",127))
         self.assertTrue(TestLexer.checkLexeme("123.0e+123","123.0e+123,<EOF>",128))
         self.assertTrue(TestLexer.checkLexeme("123E-e","123,E,-,e,<EOF>",129))
         self.assertTrue(TestLexer.checkLexeme("123.456","123.456,<EOF>",130))
@@ -161,24 +186,24 @@ class LexerSuite(unittest.TestCase):
 
     def test_string(self):
         """test string"""
-        self.assertTrue(TestLexer.checkLexeme(""" "abc sdajw jpsdaf" ""","abc sdajw jpsdaf,<EOF>",134))
-        self.assertTrue(TestLexer.checkLexeme(""" "This is a string containing tab \t" ""","This is a string containing tab \t,<EOF>",135))
-        self.assertTrue(TestLexer.checkLexeme(""" "He asked me: Where is John?" ""","He asked me: Where is John?,<EOF>",136))
-        self.assertTrue(TestLexer.checkLexeme(""" "Nguyen""Van""A" ""","Nguyen,Van,A,<EOF>",137))
-        self.assertTrue(TestLexer.checkLexeme(""" "Nguyen Van A ""","Unclosed string: Nguyen Van A ",138))
-        self.assertTrue(TestLexer.checkLexeme(""" "Nguyen"" ""","Nguyen,Unclosed string:  ",139))
-        self.assertTrue(TestLexer.checkLexeme(""" "String with illegal escape \\y" ""","Illegal escape in string: String with illegal escape \\y",140))
-        self.assertTrue(TestLexer.checkLexeme(""" "String with double quote \\"" ""","String with double quote \\\",<EOF>",141))
-        self.assertTrue(TestLexer.checkLexeme(""" "String with backslash \\\\" ""","String with backslash \\\\,<EOF>",142))
-        self.assertTrue(TestLexer.checkLexeme(""" "String with newline \n" ""","Unclosed string: String with newline ",143))
-        self.assertTrue(TestLexer.checkLexeme(""" "String with illegal escape \\a" ""","Illegal escape in string: String with illegal escape \\a",144))
-        self.assertTrue(TestLexer.checkLexeme(""" "String with illegal escape \\x" ""","Illegal escape in string: String with illegal escape \\x",145))
-        self.assertTrue(TestLexer.checkLexeme(""" "String with a lot special characters: !#$%^&**%^#$%!" ""","String with a lot special characters: !#$%^&**%^#$%!,<EOF>",146))
-        self.assertTrue(TestLexer.checkLexeme(""" "Double quote without slash "" ""","Double quote without slash ,Unclosed string:  ",147))
+        self.assertTrue(TestLexer.checkLexeme(""" "abc sdajw jpsdaf" ""","\"abc sdajw jpsdaf\",<EOF>",134))
+        self.assertTrue(TestLexer.checkLexeme(""" "This is a string containing tab \t" ""","\"This is a string containing tab \t\",<EOF>",135))
+        self.assertTrue(TestLexer.checkLexeme(""" "He asked me: Where is John?" ""","\"He asked me: Where is John?\",<EOF>",136))
+        self.assertTrue(TestLexer.checkLexeme(""" "Nguyen""Van""A" ""","\"Nguyen\",\"Van\",\"A\",<EOF>",137))
+        self.assertTrue(TestLexer.checkLexeme(""" "Nguyen Van A ""","Unclosed string: \"Nguyen Van A ",138))
+        self.assertTrue(TestLexer.checkLexeme(""" "Nguyen"" ""","\"Nguyen\",Unclosed string: \" ",139))
+        self.assertTrue(TestLexer.checkLexeme(""" "String with illegal escape \\y" ""","Illegal escape in string: \"String with illegal escape \\y",140))
+        self.assertTrue(TestLexer.checkLexeme(""" "String with double quote \\"" ""","\"String with double quote \\\"\",<EOF>",141))
+        self.assertTrue(TestLexer.checkLexeme(""" "String with backslash \\\\" ""","\"String with backslash \\\\\",<EOF>",142))
+        self.assertTrue(TestLexer.checkLexeme(""" "String with newline \n" ""","Unclosed string: \"String with newline ",143))
+        self.assertTrue(TestLexer.checkLexeme(""" "String with illegal escape \\a" ""","Illegal escape in string: \"String with illegal escape \\a",144))
+        self.assertTrue(TestLexer.checkLexeme(""" "String with illegal escape \\x" ""","Illegal escape in string: \"String with illegal escape \\x",145))
+        self.assertTrue(TestLexer.checkLexeme(""" "String with a lot special characters: !#$%^&**%^#$%!" ""","\"String with a lot special characters: !#$%^&**%^#$%!\",<EOF>",146))
+        self.assertTrue(TestLexer.checkLexeme(""" "Double quote without slash "" ""","\"Double quote without slash \",Unclosed string: \" ",147))
 
         """Some more test"""
-        self.assertTrue(TestLexer.checkLexeme(""" "Nguyen Van A" 123456789 ""","Nguyen Van A,123456789,<EOF>",148))
-        self.assertTrue(TestLexer.checkLexeme(""" "Nguyen Van A" mssv 123456789 HCMUT CSE ""","Nguyen Van A,mssv,123456789,HCMUT,CSE,<EOF>",149))
+        self.assertTrue(TestLexer.checkLexeme(""" "Nguyen Van A" 123456789 ""","\"Nguyen Van A\",123456789,<EOF>",148))
+        self.assertTrue(TestLexer.checkLexeme(""" "Nguyen Van A" mssv 123456789 HCMUT CSE ""","\"Nguyen Van A\",mssv,123456789,HCMUT,CSE,<EOF>",149))
 
     def test_errorToken(self):
         """test error tokens"""
@@ -196,8 +221,8 @@ class LexerSuite(unittest.TestCase):
 
         self.assertTrue(TestLexer.checkLexeme("Assignment 1 MiniGo SPECIFICATION","Assignment,1,MiniGo,SPECIFICATION,<EOF>",161))
         self.assertTrue(TestLexer.checkLexeme("1234 4321 0000","1234,4321,0,0,0,0,<EOF>",162))
-        self.assertTrue(TestLexer.checkLexeme("00.0e0","0,0.0e0,<EOF>",163))
-        self.assertTrue(TestLexer.checkLexeme("00.0e+-*/0","0,0.0,e,+,-,*,/,0,<EOF>",164))
+        self.assertTrue(TestLexer.checkLexeme("00.0e0","00.0e0,<EOF>",163))
+        self.assertTrue(TestLexer.checkLexeme("00.0e+-*/0","00.0,e,+,-,*,/,0,<EOF>",164))
         self.assertTrue(TestLexer.checkLexeme("1+2=3","1,+,2,=,3,<EOF>",165))
         self.assertTrue(TestLexer.checkLexeme("func ABCD","func,ABCD,<EOF>",166))
         self.assertTrue(TestLexer.checkLexeme("func ABCD()","func,ABCD,(,),<EOF>",167))
@@ -205,7 +230,7 @@ class LexerSuite(unittest.TestCase):
         self.assertTrue(TestLexer.checkLexeme("abc,asd","abc,,,asd,<EOF>",169))
         self.assertTrue(TestLexer.checkLexeme("<-","<,-,<EOF>",170))
         self.assertTrue(TestLexer.checkLexeme("# # Cannot comment","ErrorToken #",171))
-        self.assertTrue(TestLexer.checkLexeme(""" foo(abc,123,"ok") ""","foo,(,abc,,,123,,,ok,),<EOF>",172))
+        self.assertTrue(TestLexer.checkLexeme(""" foo(abc,123,"ok") ""","foo,(,abc,,,123,,,\"ok\",),<EOF>",172))
         self.assertTrue(TestLexer.checkLexeme("return true","return,true,<EOF>",173))
         self.assertTrue(TestLexer.checkLexeme("return 0","return,0,<EOF>",174))
         self.assertTrue(TestLexer.checkLexeme("if (x=0) do nothing","if,(,x,=,0,),do,nothing,<EOF>",175))
@@ -213,25 +238,25 @@ class LexerSuite(unittest.TestCase):
         self.assertTrue(TestLexer.checkLexeme("var x <- 1","var,x,<,-,1,<EOF>",177))
         self.assertTrue(TestLexer.checkLexeme("number x[1]","number,x,[,1,],<EOF>",178))
         self.assertTrue(TestLexer.checkLexeme("bool things <- TRUE","bool,things,<,-,TRUE,<EOF>",179))
-        self.assertTrue(TestLexer.checkLexeme(""" string str <- "String things" ""","string,str,<,-,String things,<EOF>",180))
-        self.assertTrue(TestLexer.checkLexeme(""" "this string contains all available escape sequence \t\n\r" ""","Unclosed string: this string contains all available escape sequence \t",181))
-        self.assertTrue(TestLexer.checkLexeme(""" "this string contains all available escape sequence \t\n\r until reach illegal escape \\x" ""","Illegal escape in string: this string contains all available escape sequence \t\n\n\n until reach illegal escape \\x",182))
-        self.assertTrue(TestLexer.checkLexeme(""" "multiple strings""first string""second string" ""","multiple strings,first string,second string,<EOF>",183))
-        self.assertTrue(TestLexer.checkLexeme(""" "string type" 123 TRUE ""","string type,123,TRUE,<EOF>",184))
-        self.assertTrue(TestLexer.checkLexeme(""" "number in string type 123.e123" ""","number in string type 123.e123,<EOF>",185))
-        self.assertTrue(TestLexer.checkLexeme(""" number a <- "ha ha ha" ""","number,a,<,-,ha ha ha,<EOF>",186))
+        self.assertTrue(TestLexer.checkLexeme(""" string str <- "String things" ""","string,str,<,-,\"String things\",<EOF>",180))
+        self.assertTrue(TestLexer.checkLexeme(""" "this string contains all available escape sequence \t\n\r" ""","Unclosed string: \"this string contains all available escape sequence \t",181))
+        self.assertTrue(TestLexer.checkLexeme(""" "this string contains all available escape sequence \t\n\r until reach illegal escape \\x" ""","Illegal escape in string: \"this string contains all available escape sequence \t\n\n\n until reach illegal escape \\x",182))
+        self.assertTrue(TestLexer.checkLexeme(""" "multiple strings""first string""second string" ""","\"multiple strings\",\"first string\",\"second string\",<EOF>",183))
+        self.assertTrue(TestLexer.checkLexeme(""" "string type" 123 TRUE ""","\"string type\",123,TRUE,<EOF>",184))
+        self.assertTrue(TestLexer.checkLexeme(""" "number in string type 123.e123" ""","\"number in string type 123.e123\",<EOF>",185))
+        self.assertTrue(TestLexer.checkLexeme(""" number a <- "ha ha ha" ""","number,a,<,-,\"ha ha ha\",<EOF>",186))
         self.assertTrue(TestLexer.checkLexeme(""" DeprecationWarning: ""","DeprecationWarning,:,<EOF>",187))
-        self.assertTrue(TestLexer.checkLexeme(""" "DeprecationWarning: no more error ha ha ^.^" ""","DeprecationWarning: no more error ha ha ^.^,<EOF>",188))
+        self.assertTrue(TestLexer.checkLexeme(""" "DeprecationWarning: no more error ha ha ^.^" ""","\"DeprecationWarning: no more error ha ha ^.^\",<EOF>",188))
         self.assertTrue(TestLexer.checkLexeme(""" Too tired hjc T.T ""","Too,tired,hjc,T,.,T,<EOF>",189))
-        self.assertTrue(TestLexer.checkLexeme(""" "Too tired hjc T.T" ""","Too tired hjc T.T,<EOF>",190))
+        self.assertTrue(TestLexer.checkLexeme(""" "Too tired hjc T.T" ""","\"Too tired hjc T.T\",<EOF>",190))
         self.assertTrue(TestLexer.checkLexeme(""" class Regex() pass ""","class,Regex,(,),pass,<EOF>",191))
         self.assertTrue(TestLexer.checkLexeme(""" __main__ ""","__main__,<EOF>",192))
         self.assertTrue(TestLexer.checkLexeme(""" from x import y ""","from,x,import,y,<EOF>",193))
-        self.assertTrue(TestLexer.checkLexeme(""" "##Comment but not a comment" ""","##Comment but not a comment,<EOF>",194))
-        self.assertTrue(TestLexer.checkLexeme(""" "Arrrrrggg I want to say that..." ##Haha u are muted ""","Arrrrrggg I want to say that...,ErrorToken #",195))
-        self.assertTrue(TestLexer.checkLexeme(""" ">_< >.< :3 => =< :> :< :) :(" """,">_< >.< :3 => =< :> :< :) :(,<EOF>",195))
-        self.assertTrue(TestLexer.checkLexeme(""" 0798666xyz "call me" ""","0,798666,xyz,call me,<EOF>",196))
+        self.assertTrue(TestLexer.checkLexeme(""" "##Comment but not a comment" ""","\"##Comment but not a comment\",<EOF>",194))
+        self.assertTrue(TestLexer.checkLexeme(""" "Arrrrrggg I want to say that..." ##Haha u are muted ""","\"Arrrrrggg I want to say that...\",ErrorToken #",195))
+        self.assertTrue(TestLexer.checkLexeme(""" ">_< >.< :3 => =< :> :< :) :(" ""","\">_< >.< :3 => =< :> :< :) :(\",<EOF>",195))
+        self.assertTrue(TestLexer.checkLexeme(""" 0798666xyz "call me" ""","0,798666,xyz,\"call me\",<EOF>",196))
         self.assertTrue(TestLexer.checkLexeme(""" EOF ""","EOF,<EOF>",197))
-        self.assertTrue(TestLexer.checkLexeme(""" "3 more to actual EOF" ""","3 more to actual EOF,<EOF>",198))
-        self.assertTrue(TestLexer.checkLexeme(""" "Now <EOF>" ""","Now <EOF>,<EOF>",199))
-        self.assertTrue(TestLexer.checkLexeme(""" "just kidding, now" <EOF> ""","just kidding, now,<,EOF,>,<EOF>",200))
+        self.assertTrue(TestLexer.checkLexeme(""" "3 more to actual EOF" ""","\"3 more to actual EOF\",<EOF>",198))
+        self.assertTrue(TestLexer.checkLexeme(""" "Now <EOF>" ""","\"Now <EOF>\",<EOF>",199))
+        self.assertTrue(TestLexer.checkLexeme(""" "just kidding, now" <EOF> ""","\"just kidding, now\",<,EOF,>,<EOF>",200))

@@ -1,1 +1,1 @@
-Unclosed string: Nguyen Van A 
+Unclosed string: "Nguyen Van A 

@@ -1,1 +1,1 @@
-3 more to actual EOF,<EOF>
+"3 more to actual EOF",<EOF>

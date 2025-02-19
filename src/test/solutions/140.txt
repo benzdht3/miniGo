@@ -1,1 +1,1 @@
-Illegal escape in string: String with illegal escape \y
+Illegal escape in string: "String with illegal escape \y
