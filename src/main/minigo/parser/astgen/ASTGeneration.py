@@ -1,14 +1,8 @@
-# Generated from main/minigo/parser/MiniGo.g4 by ANTLR 4.9.2
-from antlr4 import *
-if __name__ is not None and "." in __name__:
-    from .MiniGoParser import MiniGoParser
-else:
-    from MiniGoParser import MiniGoParser
+from MiniGoVisitor import MiniGoVisitor
+from MiniGoParser import MiniGoParser
+from AST import *
 
-# This class defines a complete generic visitor for a parse tree produced by MiniGoParser.
-
-class MiniGoVisitor(ParseTreeVisitor):
-
+class ASTGeneration(MiniGoVisitor):
     # Visit a parse tree produced by MiniGoParser#program.
     def visitProgram(self, ctx:MiniGoParser.ProgramContext):
         return self.visitChildren(ctx)
@@ -310,4 +304,3 @@ class MiniGoVisitor(ParseTreeVisitor):
 
 
 
-del MiniGoParser
