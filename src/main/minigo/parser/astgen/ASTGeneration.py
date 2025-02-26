@@ -5,46 +5,68 @@ from AST import *
 class ASTGeneration(MiniGoVisitor):
     # Visit a parse tree produced by MiniGoParser#program.
     def visitProgram(self, ctx:MiniGoParser.ProgramContext):
-        return self.visitChildren(ctx)
+        return self.visit(ctx.declarations())
 
 
     # Visit a parse tree produced by MiniGoParser#declarations.
     def visitDeclarations(self, ctx:MiniGoParser.DeclarationsContext):
-        return self.visitChildren(ctx)
+        return Program(self.visit(ctx.declare()) + self.visit(ctx.declareTail()))
 
 
     # Visit a parse tree produced by MiniGoParser#declare.
     def visitDeclare(self, ctx:MiniGoParser.DeclareContext):
-        return self.visitChildren(ctx)
+        if ctx.constDeclare():
+            return [self.visit(ctx.constDeclare())]
+        elif ctx.varDeclare():
+            return [self.visit(ctx.varDeclare())]
+        elif ctx.typeDeclare():
+            return [self.visit(ctx.typeDeclare())]
+        elif ctx.funcDeclare():
+            return [self.visit(ctx.funcDeclare())]
 
 
     # Visit a parse tree produced by MiniGoParser#declareTail.
     def visitDeclareTail(self, ctx:MiniGoParser.DeclareTailContext):
-        return self.visitChildren(ctx)
+        if ctx.declare():
+            return self.visit(ctx.declare()) + self.visit(ctx.declareTail())
+        return []
 
 
     # Visit a parse tree produced by MiniGoParser#constDeclare.
     def visitConstDeclare(self, ctx:MiniGoParser.ConstDeclareContext):
-        return self.visitChildren(ctx)
+        return ConstDecl(self.visit(ctx.identifier()), None, self.visit(ctx.init()))
 
 
     # Visit a parse tree produced by MiniGoParser#varDeclare.
     def visitVarDeclare(self, ctx:MiniGoParser.VarDeclareContext):
-        return self.visitChildren(ctx)
+        varType, varInit = self.visit(ctx.modify())
+        return varDeclare(self.visit(ctx.identifier()), varType, varInit)
 
 
     # Visit a parse tree produced by MiniGoParser#modify.
     def visitModify(self, ctx:MiniGoParser.ModifyContext):
-        return self.visitChildren(ctx)
+        varType, varInit = None
+        if ctx.arrayType(): varType = self.visit(ctx.arrayType())
+        if ctx.varType(): varType = self.visit(ctx.varType())
+        if ctx.identifier(): varType = self.visit(ctx.identifier())
+        if ctx.init(): varInit = self.visit(ctx.init())
+
+        return varType, varInit
 
 
     # Visit a parse tree produced by MiniGoParser#varType.
     def visitVarType(self, ctx:MiniGoParser.VarTypeContext):
-        return self.visitChildren(ctx)
+        if ctx.INT: return IntType()
+        if ctx.FLOAT: return FloatType()
+        if ctx.STRING: return StringType()
+        if ctx.BOOL: return BoolType()
 
 
     # Visit a parse tree produced by MiniGoParser#arrayType.
     def visitArrayType(self, ctx:MiniGoParser.ArrayTypeContext):
+        eleType = None
+        if ctx.varType(): eleType = self.visit(ctx.varType())
+        if ctx.STRUCT: eleType = StructType
         return self.visitChildren(ctx)
 
 
