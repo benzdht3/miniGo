@@ -1,0 +1,1 @@
+Program([FuncDecl(foo,[],VoidType,Block([VarDecl(a,ArrayType([IntLiteral(1)],IntType),IntLiteral(1))]))])

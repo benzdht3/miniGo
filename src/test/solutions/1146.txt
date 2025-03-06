@@ -1,0 +1,1 @@
+Program([FuncDecl(foo,[],VoidType,Block([ForStep(VarDecl(a,IntLiteral(1)),BinaryOp(<,Id(a),IntLiteral(10)),Assign(Id(a),IntLiteral(1)),Block([Return()])),ForStep(Assign(Id(a),BinaryOp(+,Id(a),IntLiteral(1))),BinaryOp(<,Id(a),IntLiteral(10)),Assign(Id(a),BinaryOp(-,Id(a),IntLiteral(1))),Block([Return()]))]))])

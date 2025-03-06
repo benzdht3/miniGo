@@ -53,13 +53,13 @@ declareTail: NL* declare NL* declareTail | ;
 constDeclare: CONST identifier init endStmt ;
 varDeclare: VAR identifier modify endStmt ;
 
-modify: (arrayType | varType | identifier) | init | ((arrayType | varType | identifier) init) ;
+modify: (arrayType | varType | identifierType) | init | ((arrayType | varType | identifierType) init) ;
 
 varType: INT | FLOAT | STRING | BOOLEAN ;
 
-arrayType: dimensions+ (varType | STRUCT | identifier) ;
+arrayType: dimensions+ (varType | STRUCT | identifierType) ;
 
-dimensions: LP (INTLIT | identifier) RP ;
+dimensions: LP (INTLIT | identifierType) RP ;
 
 init: INITOP (expr | arrayInit) ;
 
@@ -67,16 +67,22 @@ typeDeclare: TYPE identifier (structDeclare | interfaceDeclare) ;
 
 structDeclare: STRUCT LC field+ RC endStmt ;
 
-field: identifier (varType | structDeclare | arrayType | interfaceDeclare | identifier) endStmt ;
+field: identifier (varType | structDeclare | arrayType | interfaceDeclare | identifierType) endStmt ;
 
-interfaceDeclare: INTERFACE LC NL* method+ endStmt+ RC endStmt ;
+interfaceDeclare: INTERFACE LC NL* prototype+ endStmt+ RC endStmt ;
 
-method: identifier LB (parameters paraTail)? RB (varType | arrayType | identifier)? endStmt* ;
+prototype: identifier LB (parameters paraTail)? RB (varType | arrayType | identifierType)? endStmt* ;
 
-parameters: identifier (COMMA identifier)* (varType | arrayType | identifier) ;
+parameters: identifier (COMMA identifier)* (varType | arrayType) ;
 paraTail: COMMA parameters paraTail | ;
 
 funcDeclare: FUNC methodDeclare? method LC NL* stmt* RC endStmt ;
+
+method: identifier LB (paramDeclare paraDeclTail)? RB (varType | arrayType | identifier)? endStmt* ;
+
+paramDeclare: identifier (COMMA identifier)* (varType | arrayType | identifierType) ;
+
+paraDeclTail: COMMA paramDeclare paraDeclTail | ;
 
 methodDeclare: LB identifier identifier RB ;
 
@@ -94,10 +100,11 @@ statement:
   | methodCall
   | returnstmt ;
 
-assignment: lhs assignOp+ (expr | arrayInit) ;
+assignment: lhs assignOp (expr | arrayInit) ;
 
-lhs: identifier index*
-   | (identifier | identifier index+) (DOT identifier index*)+ ;
+lhs: identifierType | arrayElement | structField | methodCallExpr  ;
+
+arrayCell: identifierType index+ ;
 
 assignOp: ASSIGN | ADDASS | SUBASS | MULASS | DIVASS | MODASS ;
 
@@ -109,9 +116,9 @@ forstmt: FOR (expr | initFor | rangeFor) LC NL* stmt* RC ;
 
 initFor: (assignment_for | (VAR identifier (varType | arrayType)? init)) endStmt expr endStmt assignment_for ;
 
-assignment_for: ID assignOp literal ;
+assignment_for: identifierType assignOp expr ;
 
-rangeFor: ('index' | '_') COMMA ('value' | '_') ASSIGN RANGE (identifier | literal | arrayElement) ;
+rangeFor: identifierType COMMA identifierType ASSIGN RANGE (literal | arrayInit | arrayElement) ;
 
 breakstmt: BREAK ;
 contstmt: CONTINUE ;
@@ -129,36 +136,54 @@ expr6: arrayElement | methodCallExpr | expr7 ;
 
 arrayElement: (expr8 | funcCall) index+ ;
 index: LP expr RP ;
-structField: (identifier | arrayElement | structLit) (DOT ( identifier | funcCall) index*)+ ;
+structField: structReceiver DOT fieldAccess index* ((DOT (fieldAccess | funcCallMeth))+ indexTail*)? (DOT lastFieldAccess)?;
+
+lastFieldAccess: identifier ;
+
+indexTail: LP expr RP ;
+
+fieldAccess: identifier ;
+
+structReceiver: identifierType | arrayElement | structLit | LB expr RB | BOOLLIT ;
+
 expr7: structField | funcCall | expr8 ;
 
+funcArrayCell: methodCallExpr index+ ;
+
 funcCall: identifier LB arguments? RB ;
+
+funcCallReceiver: identifier LB arguments? RB ;
 
 arguments: expr argTail ;
 argTail: COMMA expr argTail | ;
 
-methodCallExpr: (funcCall | identifier | arrayInit | BOOLLIT | LB expr RB) DOT (funcCall | identifier index* | methodCallExpr) ;
+methodCallExpr: identifierType DOT (funcCallMeth DOT)+ funcCallMeth
+| (identifierType | structField | funcCall) DOT funcCallMeth;
 
-methodCall: identifier index* DOT expr SEMICOLON? ;
+funcCallMeth: identifier LB arguments? RB ;
+
+methodCall: (identifierType | arrayCell | structField) DOT funcCallMeth SEMICOLON? ;
 
 expr8: LB expr RB | literal | arrayInit ;
 
-arrayInit: arrayType arrayLit? ;
+arrayInit: arrayTypeInit arrayLit? ;
 
-literal: 
-    INTLIT | DECIMAL | BINARY | OCTAL | HEXADECIMAL | FLOATLIT | BOOLLIT | STRINGLIT 
-  | structLit | identifier | NIL ;
+arrayTypeInit: dimensions+ (varType | identifierType) ;
 
-arrayLit: LC (literal | arrayLit) literalTail RC literalTail ;
+literal: INTLIT | DECIMAL | BINARY | OCTAL | HEXADECIMAL | FLOATLIT | BOOLLIT | STRINGLIT | structLit | identifierType | NIL ;
+
+identifierType: ID ;
+
+arrayLit: LC (literal | arrayLit) literalTail RC ;
 
 literalTail: COMMA (literal | arrayLit) literalTail | ;
 
 structLit: identifier LC structElement? RC ;
 
 structElement: identifier COLON expr elementTail ;
-elementTail: COMMA structElement | ;
+elementTail: COMMA structElement elementTail | ;
 
-identifier: ID | 'value' | 'index' ;
+identifier: ID ;
 endStmt: NL | SEMICOLON | SEMICOLON NL ;
 
 // LEXICAL

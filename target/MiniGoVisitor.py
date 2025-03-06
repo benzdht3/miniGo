@@ -84,8 +84,8 @@ class MiniGoVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by MiniGoParser#method.
-    def visitMethod(self, ctx:MiniGoParser.MethodContext):
+    # Visit a parse tree produced by MiniGoParser#prototype.
+    def visitPrototype(self, ctx:MiniGoParser.PrototypeContext):
         return self.visitChildren(ctx)
 
 
@@ -101,6 +101,21 @@ class MiniGoVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by MiniGoParser#funcDeclare.
     def visitFuncDeclare(self, ctx:MiniGoParser.FuncDeclareContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by MiniGoParser#method.
+    def visitMethod(self, ctx:MiniGoParser.MethodContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by MiniGoParser#paramDeclare.
+    def visitParamDeclare(self, ctx:MiniGoParser.ParamDeclareContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by MiniGoParser#paraDeclTail.
+    def visitParaDeclTail(self, ctx:MiniGoParser.ParaDeclTailContext):
         return self.visitChildren(ctx)
 
 
@@ -126,6 +141,11 @@ class MiniGoVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by MiniGoParser#lhs.
     def visitLhs(self, ctx:MiniGoParser.LhsContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by MiniGoParser#arrayCell.
+    def visitArrayCell(self, ctx:MiniGoParser.ArrayCellContext):
         return self.visitChildren(ctx)
 
 
@@ -229,13 +249,43 @@ class MiniGoVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by MiniGoParser#lastFieldAccess.
+    def visitLastFieldAccess(self, ctx:MiniGoParser.LastFieldAccessContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by MiniGoParser#indexTail.
+    def visitIndexTail(self, ctx:MiniGoParser.IndexTailContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by MiniGoParser#fieldAccess.
+    def visitFieldAccess(self, ctx:MiniGoParser.FieldAccessContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by MiniGoParser#structReceiver.
+    def visitStructReceiver(self, ctx:MiniGoParser.StructReceiverContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by MiniGoParser#expr7.
     def visitExpr7(self, ctx:MiniGoParser.Expr7Context):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by MiniGoParser#funcArrayCell.
+    def visitFuncArrayCell(self, ctx:MiniGoParser.FuncArrayCellContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by MiniGoParser#funcCall.
     def visitFuncCall(self, ctx:MiniGoParser.FuncCallContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by MiniGoParser#funcCallReceiver.
+    def visitFuncCallReceiver(self, ctx:MiniGoParser.FuncCallReceiverContext):
         return self.visitChildren(ctx)
 
 
@@ -254,6 +304,11 @@ class MiniGoVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by MiniGoParser#funcCallMeth.
+    def visitFuncCallMeth(self, ctx:MiniGoParser.FuncCallMethContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by MiniGoParser#methodCall.
     def visitMethodCall(self, ctx:MiniGoParser.MethodCallContext):
         return self.visitChildren(ctx)
@@ -269,8 +324,18 @@ class MiniGoVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by MiniGoParser#arrayTypeInit.
+    def visitArrayTypeInit(self, ctx:MiniGoParser.ArrayTypeInitContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by MiniGoParser#literal.
     def visitLiteral(self, ctx:MiniGoParser.LiteralContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by MiniGoParser#identifierType.
+    def visitIdentifierType(self, ctx:MiniGoParser.IdentifierTypeContext):
         return self.visitChildren(ctx)
 
 

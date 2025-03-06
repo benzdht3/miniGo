@@ -1,1 +1,1 @@
-Error on line 7 col 87: var
+Error on line 7 col 86: var
